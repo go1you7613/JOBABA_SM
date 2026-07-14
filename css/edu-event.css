@@ -1,15 +1,23 @@
+@font-face{font-family:'Paperlogy';src:url('../fonts/Paperlogy-4Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Paperlogy';src:url('../fonts/Paperlogy-5Medium.ttf') format('truetype');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Paperlogy';src:url('../fonts/Paperlogy-6SemiBold.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'Paperlogy';src:url('../fonts/Paperlogy-7Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Paperlogy';src:url('../fonts/Paperlogy-8ExtraBold.ttf') format('truetype');font-weight:800;font-style:normal;font-display:swap}
+@font-face{font-family:'Paperlogy';src:url('../fonts/Paperlogy-9Black.ttf') format('truetype');font-weight:900;font-style:normal;font-display:swap}
+
 /* ===== jbb- 네임스페이스: 잡아바 기존 CSS와 충돌 방지 (모든 규칙 #jbb-app 하위로 격리) ===== */
 #jbb-app{
   --jbb-brand:#1f5fd6; --jbb-brand-d:#17469e; --jbb-brand-l:#eaf1fd;
   --jbb-accent:#f97316; --jbb-accent-d:#ea580c; --jbb-danger:#dc2626;
   --jbb-ink:#1f2937; --jbb-muted:#6b7280; --jbb-line:#e5e7eb; --jbb-bg:#f4f6fb; --jbb-card:#fff;
-  font-family:'Malgun Gothic','맑은 고딕',AppleSDGothicNeo,-apple-system,sans-serif;
+  font-family:'Paperlogy','Malgun Gothic','맑은 고딕',AppleSDGothicNeo,-apple-system,sans-serif;
   color:var(--jbb-ink); background:var(--jbb-bg); line-height:1.5;
 }
 #jbb-app *{box-sizing:border-box}
+#jbb-app button,#jbb-app input,#jbb-app select,#jbb-app textarea{font-family:inherit}
 #jbb-app .jbb-wrap{max-width:960px;margin:0 auto;padding:0 16px 130px}
 /* hero */
-#jbb-app .jbb-header{background-color:#169bea;background-image:linear-gradient(rgba(255,255,255,.14) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.14) 1px,transparent 1px);background-size:48px 48px;background-position:center top;display:flex;justify-content:center;align-items:center;padding:32px 16px 54px;text-align:center;line-height:0;overflow:hidden}
+#jbb-app .jbb-header{--jbb-grid-size:min(29.1px,calc((100vw - 32px)*.04286));background-color:#169bea;background-image:linear-gradient(rgba(255,255,255,.14) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.14) 1px,transparent 1px);background-size:var(--jbb-grid-size) var(--jbb-grid-size);background-position:center calc(32px + var(--jbb-grid-size));display:flex;justify-content:center;align-items:center;padding:32px 16px 54px;text-align:center;line-height:0;overflow:hidden}
 #jbb-app .jbb-hero-img{display:block;width:min(760px,100%);height:auto}
 /* quota strip */
 #jbb-app .jbb-qstrip{max-width:960px;margin:-20px auto 0;padding:0 16px;position:relative;z-index:5}
@@ -70,7 +78,7 @@
 /* result modal */
 .jbb-resultModalOverlay{position:fixed;inset:0;background:rgba(17,24,39,.56);display:none;align-items:center;justify-content:center;padding:24px 16px;z-index:99999}
 .jbb-resultModalOverlay.jbb-show{display:flex;animation:jbb-fade .2s}
-.jbb-resultModal{width:min(720px,100%);max-height:min(760px,86vh);background:#fff;border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.28);display:flex;flex-direction:column;overflow:hidden;font-family:'Malgun Gothic','맑은 고딕',AppleSDGothicNeo,-apple-system,sans-serif}
+.jbb-resultModal{width:min(720px,100%);max-height:min(760px,86vh);background:#fff;border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.28);display:flex;flex-direction:column;overflow:hidden;font-family:'Paperlogy','Malgun Gothic','맑은 고딕',AppleSDGothicNeo,-apple-system,sans-serif}
 .jbb-resultModalHead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid #e5e7eb}
 .jbb-resTitle{font-size:20px;margin:0;color:#17469e;font-weight:900}
 .jbb-modalClose{border:0;background:#eef1f6;color:#1f2937;border-radius:999px;width:34px;height:34px;font-size:20px;line-height:1;cursor:pointer}
@@ -82,9 +90,9 @@
 #jbb-app .jbb-notice b{color:var(--jbb-accent-d)}
 /* admin */
 /* toast + overlays */
-.jbb-toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#111827;color:#fff;padding:11px 18px;border-radius:10px;font-size:13.5px;opacity:0;pointer-events:none;transition:.25s;z-index:100000;font-family:'Malgun Gothic','맑은 고딕',sans-serif}
+.jbb-toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#111827;color:#fff;padding:11px 18px;border-radius:10px;font-size:13.5px;opacity:0;pointer-events:none;transition:.25s;z-index:100000;font-family:'Paperlogy','Malgun Gothic','맑은 고딕',sans-serif}
 .jbb-toast.jbb-show{opacity:1}
-.jbb-overlay{position:fixed;inset:0;background:rgba(17,24,39,.5);display:none;align-items:center;justify-content:center;z-index:100000;font-family:'Malgun Gothic','맑은 고딕',sans-serif}
+.jbb-overlay{position:fixed;inset:0;background:rgba(17,24,39,.5);display:none;align-items:center;justify-content:center;z-index:100000;font-family:'Paperlogy','Malgun Gothic','맑은 고딕',sans-serif}
 .jbb-overlay.jbb-show{display:flex;animation:jbb-fade .2s}
 .jbb-sticker{background:#fff;border-radius:22px;padding:30px 28px;max-width:340px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.3);animation:jbb-drop .45s cubic-bezier(.2,1.3,.4,1)}
 @keyframes jbb-drop{0%{transform:translateY(-30px) scale(.8);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
@@ -92,7 +100,7 @@
 .jbb-sticker h2{font-size:20px;margin:14px 0 8px;color:#17469e}
 .jbb-sticker p{font-size:14px;color:#6b7280;margin:0 0 18px}
 /* footer */
-.jbb-foot{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e5e7eb;box-shadow:0 -4px 16px rgba(0,0,0,.06);z-index:9999;font-family:'Malgun Gothic','맑은 고딕',sans-serif}
+.jbb-foot{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e5e7eb;box-shadow:0 -4px 16px rgba(0,0,0,.06);z-index:9999;font-family:'Paperlogy','Malgun Gothic','맑은 고딕',sans-serif}
 .jbb-foot .jbb-inner{max-width:960px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .jbb-foot .jbb-info{font-size:13.5px;color:#1f2937}
 .jbb-foot .jbb-info .jbb-big{font-size:18px;font-weight:800}
@@ -109,4 +117,3 @@
   #jbb-app .jbb-tab:nth-child(2n){border-right:0}
   #jbb-app .jbb-tab:last-child{grid-column:1 / -1}
 }
-
