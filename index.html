@@ -4,440 +4,76 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>잡아바 러닝센터 2차수급 수요조사</title>
-<style>
-  :root{
-    --brand:#1f5fd6; --brand-d:#17469e; --brand-l:#eaf1fd;
-    --accent:#f97316; --accent-d:#ea580c; --ok:#16a34a; --danger:#dc2626;
-    --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; --bg:#f4f6fb; --card:#fff;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:'Malgun Gothic','맑은 고딕',AppleSDGothicNeo,-apple-system,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
-  .wrap{max-width:960px;margin:0 auto;padding:0 16px 130px}
-  /* hero */
-  header{
-    background-color:#169bea;
-    background-image:
-      linear-gradient(rgba(255,255,255,.14) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(255,255,255,.14) 1px,transparent 1px);
-    background-size:48px 48px;
-    background-position:center top;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:32px 16px 54px;
-    text-align:center;
-    line-height:0;
-    overflow:hidden;
-  }
-  .heroImage{display:block;width:min(760px,100%);height:auto}
-  /* quota strip */
-  .qstrip{max-width:960px;margin:-20px auto 0;padding:0 16px;position:relative;z-index:5}
-  .qcard{position:relative;background:#fff;border:0;border-radius:16px;box-shadow:0 8px 24px rgba(17,24,39,.12);padding:18px 22px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center}
-  .qleft{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;width:100%}
-  .dots{display:flex;gap:6px}
-  .dot{width:21px;height:21px;border-radius:50%;background:#eef4fb;border:2px solid #cbd8e8;box-shadow:inset 0 1px 2px rgba(17,24,39,.08);transition:.3s}
-  .dot.used{background:linear-gradient(135deg,#1f3f8f,#071a4a);border-color:#06163f;box-shadow:inset 0 1px 1px rgba(255,255,255,.28),0 2px 5px rgba(7,26,74,.28);transform:scale(1.06)}
-  .qtext{font-size:14px}
-  .qtext b{color:var(--accent);font-size:19px;font-weight:800}
-  .authmini{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .authmini input{border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:14px;min-width:150px}
-  .btn{border:0;border-radius:8px;padding:9px 15px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
-  .btn-p{background:var(--brand);color:#fff}.btn-p:hover{background:var(--brand-d)}
-  .btn-g{background:#eef1f6;color:var(--ink)}.btn-g:hover{background:#e2e6ee}
-  .btn-o{background:var(--accent);color:#fff}.btn-o:hover{background:var(--accent-d)}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
-  .who b{color:var(--brand)}
-  .hint{color:var(--muted);font-size:12px}
-  /* tabs */
-  .tabs{display:grid;grid-template-columns:repeat(5,1fr);margin:28px 0 0;border:1px solid rgba(22,155,234,.32);border-radius:0;overflow:hidden;background:#e9f9fb}
-  .tab{min-height:52px;border:0;border-right:1px solid rgba(22,155,234,.32);background:#e9f9fb;padding:0 12px;font-size:15px;font-weight:800;color:#1594d4;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;transition:.15s}
-  .tab:last-child{border-right:0}
-  .tab:hover{background:#d8f3f8;color:#0b7fbd}
-  .tab.on{background:#169bea;color:#fff}
-  .tab .cnt{font-size:11px;color:#1594d4;background:#fff;border:1px solid rgba(22,155,234,.26);border-radius:999px;padding:1px 7px;line-height:1.25}
-  .tab.on .cnt{color:#169bea;background:#fff;border-color:#fff}
-  .tab.res.on{background:#169bea;color:#fff}
-  /* panels */
-  .panel{display:none;padding-top:18px}
-  .panel.on{display:block}
-  .group{margin-bottom:20px}
-  .group h3{font-size:14px;color:var(--brand-d);margin:0 0 10px;padding-left:8px;border-left:4px solid var(--brand)}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
-  .item{border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;background:var(--card);display:flex;align-items:center;justify-content:space-between;gap:10px;transition:transform .18s,border-color .18s,background .18s}
-  .item .nm{font-size:13.5px;font-weight:600}
-  .item.sel{border-color:var(--brand);background:var(--brand-l)}
-  .item.pop{animation:pop .35s ease}
-  @keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.04)}100%{transform:scale(1)}}
-  .item.locked{opacity:.5}
-  .selbtn{flex:0 0 auto;border:1.5px solid var(--brand);background:#fff;color:var(--brand);border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:5px;transition:.15s}
-  .item.sel .selbtn{background:var(--brand);color:#fff}
-  .selbtn .ck{width:0;overflow:hidden;transition:width .2s}
-  .item.sel .selbtn .ck{width:14px}
-  .selbtn:disabled{border-color:var(--line);color:var(--muted);background:#f3f4f6;cursor:not-allowed}
-  /* results */
-  .resnote{background:var(--brand-l);border:1px solid #cfe0fb;border-radius:10px;padding:11px 14px;font-size:13px;color:var(--brand-d);margin-bottom:16px}
-  .rrow{display:grid;grid-template-columns:30px 1fr 54px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px dashed #eef0f4}
-  .rrow .rk{text-align:center;font-weight:800;color:var(--muted)}
-  .rrow.top .rk{color:var(--accent)}
-  .rrow .nm2{font-size:13px}
-  .rrow .cat{font-size:11px;color:var(--muted)}
-  .rrow .track{background:#eef1f6;border-radius:7px;height:14px;overflow:hidden;margin-top:4px}
-  .rrow .fill{background:linear-gradient(90deg,var(--brand),var(--accent));height:100%;width:0;transition:width .6s ease}
-  .rrow .v{text-align:right;font-weight:800;color:var(--accent)}
-  .moreBtn{display:block;width:100%;margin-top:14px;background:#eef1f6;border:1px solid var(--line);border-radius:10px;padding:11px;font-weight:700;color:var(--brand-d);cursor:pointer}
-  /* result section */
-  .resultSection{display:none}
-  .resultModalOverlay{position:fixed;inset:0;background:rgba(17,24,39,.56);display:none;align-items:center;justify-content:center;padding:24px 16px;z-index:80}
-  .resultModalOverlay.show{display:flex;animation:fade .2s}
-  .resultModal{width:min(720px,100%);max-height:min(760px,86vh);background:#fff;border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.28);display:flex;flex-direction:column;overflow:hidden}
-  .resultModalHead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
-  .resTitle{font-size:20px;margin:0;color:var(--brand-d);font-weight:900}
-  .modalClose{border:0;background:#eef1f6;color:var(--ink);border-radius:999px;width:34px;height:34px;font-size:20px;line-height:1;cursor:pointer}
-  .modalClose:hover{background:#e2e6ee}
-  .resultModalBody{padding:18px 20px 22px;overflow:auto}
-  /* notice */
-  .notice{margin-top:24px;background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;font-size:13px;color:#9a3412}
-  .notice b{color:var(--accent-d)}
-  /* admin */
-  .admin{margin-top:22px;border:1px dashed #c7cfdd;border-radius:12px;background:#fbfcfe}
-  .admin summary{cursor:pointer;padding:14px 16px;font-weight:700;color:var(--brand-d);font-size:14px}
-  .admin .abody{padding:0 16px 18px}
-  .cfg{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:14px}
-  .cfg label{font-size:13px;font-weight:600}
-  .cfg input{border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:13px}
-  .cfg .status{font-size:12.5px;color:var(--muted)}
-  .stat{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px}
-  .stat .box{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 15px;min-width:120px}
-  .stat .box .k{font-size:12px;color:var(--muted)}
-  .stat .box .val{font-size:21px;font-weight:800;color:var(--brand)}
-  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
-  th,td{border:1px solid var(--line);padding:6px 8px;text-align:left}
-  th{background:#eef1f6}
-  td.n{text-align:right;font-variant-numeric:tabular-nums}
-  .adminbtns{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
-  /* toast + sticker */
-  .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#111827;color:#fff;padding:11px 18px;border-radius:10px;font-size:13.5px;opacity:0;pointer-events:none;transition:.25s;z-index:60}
-  .toast.show{opacity:1}
-  .overlay{position:fixed;inset:0;background:rgba(17,24,39,.5);display:none;align-items:center;justify-content:center;z-index:70}
-  .overlay.show{display:flex;animation:fade .2s}
-  @keyframes fade{from{opacity:0}to{opacity:1}}
-  .sticker{background:#fff;border-radius:22px;padding:30px 28px;max-width:340px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.3);animation:drop .45s cubic-bezier(.2,1.3,.4,1)}
-  @keyframes drop{0%{transform:translateY(-30px) scale(.8);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
-  .sticker .badge{font-size:52px;line-height:1}
-  .sticker h2{font-size:20px;margin:14px 0 8px;color:var(--brand-d)}
-  .sticker p{font-size:14px;color:var(--muted);margin:0 0 18px}
-  /* footer */
-  .foot{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.06);z-index:50}
-  .foot .inner{max-width:960px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-  .foot .info{font-size:13.5px}
-  .foot .info .big{font-size:18px;font-weight:800}
-  .foot .info .today{color:var(--accent)}.foot .info .total{color:var(--brand)}
-  @media(max-width:560px){
-    header{padding:22px 0 40px;background-size:32px 32px}
-    .heroImage{width:112%;max-width:none}
-    .grid{grid-template-columns:1fr}
-    .qstrip{margin-top:-22px}
-    .qcard{flex-direction:column;align-items:stretch;padding:18px 16px}
-    .tabs{grid-template-columns:repeat(2,1fr)}
-    .tab{min-height:48px;font-size:13px;white-space:normal;line-height:1.25}
-    .tab:nth-child(2n){border-right:0}
-    .tab:last-child{grid-column:1 / -1}
-  }
-</style>
+<link rel="stylesheet" href="css/edu-event.css" />
 </head>
 <body>
-<header>
-  <img class="heroImage" src="hero-demand-survey-foreground.png" alt="잡아바 러닝센터 온라인교육 수요조사. 원하는 강의가 있다면 하루 5번, 2주간 선택 가능. 가장 많이 선택된 강의를 우선적 수급합니다.">
-</header>
-
-<!-- 오늘 남은 선택 + 로그인 -->
-<div class="qstrip">
-  <div class="qcard">
-    <div class="qleft">
-      <div class="dots" id="dots"></div>
-      <div class="qtext">오늘 남은 선택 <b id="remainNum">5</b> / 5</div>
-    </div>
-  </div>
-</div>
-
-<div class="wrap">
-  <div class="tabs" id="tabs"></div>
-  <div id="panels"></div>
-
-  <!-- 조사현황은 하단 결과 보기 버튼 클릭 시 모달로 노출 -->
-  <section class="resultSection" id="resultSection" hidden></section>
-
-  <!-- 안내문구 -->
-  <div class="notice">
-    가장 많이 선택된 강의를 <b>우선적 수급</b>합니다. 사정에 따라 일부 강의는 수급이 어려울 수 있습니다.
+<div id="jbb-app">
+  <div class="jbb-header">
+    <img class="jbb-hero-img" src="image/hero-demand-survey-foreground-v3.png" alt="잡아바 러닝센터 온라인교육 수요조사. 원하는 강의가 있다면 하루 1번, 5개 강의. 2주간 선택 가능! 가장 많이 선택된 강의를 우선적으로 제공합니다.">
   </div>
 
-  <!-- 관리자 -->
-  <details class="admin" id="adminBox">
-    <summary>🔧 관리자 (집계 · 내보내기)</summary>
-    <div class="abody">
-      <div class="stat">
-        <div class="box"><div class="k">참여 회원 수</div><div class="val" id="stMembers">0</div></div>
-        <div class="box"><div class="k">총 선택 수</div><div class="val" id="stSelections">0</div></div>
-        <div class="box"><div class="k">오늘 선택 수</div><div class="val" id="stToday">0</div></div>
+  <div class="jbb-qstrip">
+    <div class="jbb-qcard">
+      <div class="jbb-qleft">
+        <div class="jbb-dots" id="jbb-dots"></div>
+        <div class="jbb-qtext">오늘 남은 선택 <b id="jbb-remainNum">5</b> / 5</div>
       </div>
-      <div class="adminbtns">
-        <button class="btn btn-p" id="csvAgg">집계 CSV 내보내기</button>
-        <button class="btn btn-g" id="csvRaw">원자료 CSV 내보내기</button>
-        <button class="btn btn-g" id="resetAll" style="color:var(--danger)">전체 데이터 초기화</button>
+    </div>
+  </div>
+
+  <div class="jbb-wrap">
+    <div class="jbb-tabs" id="jbb-tabs"></div>
+    <div id="jbb-panels"></div>
+    <section class="jbb-resultSection" id="jbb-resultSection" hidden></section>
+    <div class="jbb-notice">
+      가장 많이 선택된 강의를 <b>우선적 수급</b>합니다. 사정에 따라 일부 강의는 수급이 어려울 수 있습니다.
+    </div>
+  </div>
+
+  <div class="jbb-foot">
+    <div class="jbb-inner">
+      <div class="jbb-info">
+        오늘 선택 <span class="jbb-big jbb-today"><span id="jbb-footToday">0</span>/5</span>
+        &nbsp;·&nbsp; 내 누적 선택 <span class="jbb-big jbb-total" id="jbb-footTotal">0</span>개
       </div>
-      <div style="overflow:auto"><table id="adminTable"></table></div>
+      <div class="jbb-footbtns">
+        <button class="jbb-btn jbb-btn-p" id="jbb-submitBtn" disabled>선택완료 (0/5)</button>
+        <button class="jbb-btn jbb-btn-o" id="jbb-goResult">📊 결과 보기</button>
+      </div>
     </div>
-  </details>
-</div>
+  </div>
 
-<!-- 하단 고정 요약 -->
-<div class="foot">
-  <div class="inner">
-    <div class="info">
-      오늘 선택 <span class="big today"><span id="footToday">0</span>/5</span>
-      &nbsp;·&nbsp; 내 누적 선택 <span class="big total" id="footTotal">0</span>개
+  <div class="jbb-toast" id="jbb-toast"></div>
+
+  <div class="jbb-resultModalOverlay" id="jbb-resultModal" aria-hidden="true">
+    <div class="jbb-resultModal" role="dialog" aria-modal="true" aria-labelledby="jbb-resultModalTitle">
+      <div class="jbb-resultModalHead">
+        <h2 class="jbb-resTitle" id="jbb-resultModalTitle">조사현황</h2>
+        <button class="jbb-modalClose" id="jbb-resultModalClose" type="button" aria-label="조사현황 닫기">×</button>
+      </div>
+      <div class="jbb-resultModalBody" id="jbb-resultBody"></div>
     </div>
-    <button class="btn btn-o" id="goResult">📊 결과 보기</button>
+  </div>
+
+  <div class="jbb-overlay" id="jbb-overlay">
+    <div class="jbb-sticker">
+      <div class="jbb-badge">🎉</div>
+      <h2>오늘 선택 완료!</h2>
+      <p>오늘 선택은 완료되었습니다.<br>내일 5번의 기회가 또 생깁니다.</p>
+      <button class="jbb-btn jbb-btn-o" id="jbb-stickerClose">확인</button>
+    </div>
+  </div>
+
+  <div class="jbb-overlay" id="jbb-limitOverlay">
+    <div class="jbb-sticker">
+      <div class="jbb-badge">✋</div>
+      <h2>선택은 5개까지</h2>
+      <p>하루 최대 5개까지 선택할 수 있습니다.<br>완료하려면 '선택완료'를 눌러주세요.</p>
+      <button class="jbb-btn jbb-btn-o" id="jbb-limitClose">확인</button>
+    </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
-<!-- 조사현황 모달 -->
-<div class="resultModalOverlay" id="resultModal" aria-hidden="true">
-  <div class="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultModalTitle">
-    <div class="resultModalHead">
-      <h2 class="resTitle" id="resultModalTitle">조사현황</h2>
-      <button class="modalClose" id="resultModalClose" type="button" aria-label="조사현황 닫기">×</button>
-    </div>
-    <div class="resultModalBody" id="resultBody"></div>
-  </div>
-</div>
-
-<!-- 5/5 완료 스티커 팝업 -->
-<div class="overlay" id="overlay">
-  <div class="sticker">
-    <div class="badge">🎉</div>
-    <h2>오늘 선택 완료!</h2>
-    <p>오늘 선택은 완료되었습니다.<br>내일 5번의 기회가 또 생깁니다.</p>
-    <button class="btn btn-o" id="stickerClose">확인</button>
-  </div>
-</div>
-
-<script>
-/* =========================================================================
-   잡아바(JOBABA) 연동 지점 — DB 테이블/컬럼 신설 없이 스크립트로 구현
-   1) 회원 인증  : login()/currentMember → 잡아바 SSO 세션(회원ID·로그인여부)으로 교체
-   2) 저장/집계  : localStorage(STORE) → 서버 API 로 교체 가능
-                   POST /survey/select {itemId} · GET /survey/quota · GET /survey/stats?asOf=D-1
-   3) 일일 쿼터  : todayStr() 은 서버시간 기준 검증 권장(클라이언트 조작 방지)
-   4) 결과 통계  : 순위는 실시간 누적 집계 → aggregate()
-   ========================================================================= */
-
-/* ---- 84개 항목 데이터셋 ---- */
-const DATA = [
-  { id:'cert', name:'자격증', groups:[
-    { name:'ITQ', items:['ITQ Excel 2021 (2024 개정)','ITQ PowerPoint 2021 (2024 개정)','ITQ Word 2021 (2024 개정)']},
-    { name:'GTQ', items:['GTQ 포토샵 1급 (2025 대비)','GTQ 포토샵 2급 (3급 포함, 2025 대비)','GTQ 포토샵 3급 (2025 대비)','GTQi 일러스트레이터 1급 (2025 대비)','GTQi 일러스트레이터 2급 (3급 포함, 2025 대비)','GTQi 일러스트레이터 3급 (2025 대비)','GTQid 인디자인 1급 (2025 대비)','GTQid 인디자인 2급 (2025 대비)']},
-    { name:'SMAT', items:['2024 SMAT 모듈A 1주끝장 핵심요약+해설','2024 SMAT 모듈B 1주끝장 핵심요약+해설','2024 SMAT 모듈C 1주끝장 핵심요약+해설']},
-    { name:'기타 자격', items:['사무자동화산업기사 (2026) 실기','사무자동화산업기사 (2026) 필기','2026 사회복지사 1급 합격전략&핵심이론 특강','에듀윌 사회복지사 1급 7개년 기출족보특강','에듀윌 사회복지사 1급 입문특강','2026 에듀윌 유통관리사 2급 한권끝장(기출 해설 특강)']}
-  ]},
-  { id:'acct', name:'자격증(회계·세무)', groups:[
-    { name:'', items:['TAT 2급 (2026) 기출문제풀이','FAT 1급 (2026) 기출문제풀이','FAT 2급 (2026) 기출문제풀이','전산회계 2급 (2026) 기출문제풀이']}
-  ]},
-  { id:'oa', name:'사무·OA', groups:[
-    { name:'OA 팁', items:['실무에서 알아두면 좋은 OA 팁 - 엑셀','실무에서 알아두면 좋은 OA 팁 - 워드','실무에서 알아두면 좋은 OA 팁 - 파워포인트','실무에서 알아두면 좋은 OA 팁 - 한글']},
-    { name:'실무활용', items:['직장인 실무활용 - Excel','직장인 실무활용 - PowerPoint','직장인 실무활용 - Word','직장인 실무활용 - 한글']},
-    { name:'협업·문서도구', items:['처음 만나는 Google Workspace - Docs','처음 만나는 Google Workspace - Sheets','Notion(노션) 활용']},
-    { name:'AI 사무·문서', items:['업무 효율을 높이는 AI Microsoft Copilot','한컴AI X 어시스턴트 - 한글 2024편','한컴AI X 어시스턴트 - 한셀 2024편','한컴독스 AI (Web ver)','AI Gemini(제미나이) 비즈니스 [활용]','Genspark(젠스파크) AI 제대로 배우기','클로드(Claude) 100% 활용법','LangChain(랭체인) 입문','LangChain(랭체인) 기초','E-커머스를 위한 AI 이미지 처리 활용 실무','학교 수업을 위한 AI 활용법 - 교사·강사용','학교 수업을 위한 AI 활용법 - 대학생용']}
-  ]},
-  { id:'job', name:'취업전략', groups:[
-    { name:'인적성', items:['대기업 인·적성 한 번에 이해하기','인·적성, 이것만 알아도 ALL-PASS']},
-    { name:'서류작성', items:['기업이 찾는 인재, 취업의 지름길을 만드는 자기소개서','삶의 그림이 그려져 있는 이력서','경력직을 위한 차별화된 자기소개서와 경력기술서 작성 가이드']},
-    { name:'공기업', items:['2026 최신판 공기업기출 일반상식 특강','[NCS통합기본서] NCS 주요영역 260제 문제풀이','[NCS통합기본서] 교재 연계 대표 기출유형','[NCS통합기본서] 고난도 실전문제','[NCS통합기본서] 실전모의고사','NCS 자소서&면접 특강']},
-    { name:'대기업', items:['[2026 GSAT] 삼성그룹 자소서 특강','[2026 GSAT] 유형 연습문제 풀이 특강','[2026 LG 온라인 인적성] 기출복원·고난도','[2026 LG 온라인 인적성] 수리 기출유형 마스터','[2026 LG 온라인 인적성] 자기소개서 작성법','[2026 LG 온라인 인적성] 추리추리 다 맞추리','[2026 SKCT] 기출복원 문제풀이','[2026 SKCT] 반도체 취업 특강']},
-    { name:'면접·일반', items:['실전 면접 완전 정복: 답변·태도·전략','취업 성공의 최종 관문을 뚫어라_면접 스킬 역량 강화','대입 면접의 A to Z','경력 단절 여성들을 위한 취업프로그램 - 면접','경력 단절 여성들을 위한 취업프로그램 - 일반','합격의 문을 여는 취업 에센스 [취업 성공의 정석]','중장년 일자리 정보 및 지원 방법']}
-  ]},
-  { id:'ai', name:'IT·AI·마케팅', groups:[
-    { name:'', items:['누구나 한번은 봐야 하는 초보자를 위한 AI 완전정복','스마트 팩토리를 위한 AI 빅데이터 분석','세상을 바꾸는 AI와 빅데이터','구글 제미나이(Gemini)로 마케팅 마스터하기','쉽게 사용하는 AI Gemini(제미나이) 비즈니스 활용 [기본]','직장인을 위한 제미나이(Gemini) 실무 테크닉','직장생활을 위한 구글 제미나이(Gemini) 100% 활용법','대학생활을 위한 구글 제미나이(Gemini) 100% 활용법','구글 제미나이(Gemini) 이미지 생성 마스터하기','누구나 쉽게 전문 디자인을 만들 수 있는 캔바(Canva) 제대로 배우기','AI 도구로 완성하는 실전 디자인 프로젝트 (Photoshop)']}
-  ]}
-];
-
-const ITEM_INDEX={};
-DATA.forEach(cat=>{ let n=0; cat.count=0;
-  cat.groups.forEach(g=>{ g.items=g.items.map(nm=>{ n++;cat.count++; const id=cat.id+'-'+n;
-    ITEM_INDEX[id]={id,catId:cat.id,catName:cat.name,group:g.name,name:nm}; return {id,name:nm}; }); });
-});
-
-const DAILY_LIMIT=5, STORE='JBB_RUNNING_SURVEY_V1';
-function loadState(){ try{return JSON.parse(localStorage.getItem(STORE))||{currentMember:null,records:{}}}catch(e){return{currentMember:null,records:{}}} }
-function saveState(){ localStorage.setItem(STORE, JSON.stringify(state)); }
-let state=loadState();
-/* 로그인 미사용: 현재 기기를 단일 사용자(ME)로 취급. 잡아바 연동 시 ME → 로그인 회원ID 로 대체 */
-const ME='ME';
-if(!state.records[ME]) state.records[ME]=[];
-state.currentMember=ME; saveState();
-let showAll=false;   // 결과 더보기 상태
-
-/* ---- 날짜/집계 ---- */
-function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function recs(m){ return state.records[m]||[]; }
-function todayCount(m){ const t=todayStr(); return recs(m).filter(r=>r.date===t).length; }
-function isSelected(m,id){ return recs(m).some(r=>r.itemId===id); }
-function selectedToday(m,id){ const t=todayStr(); return recs(m).some(r=>r.itemId===id&&r.date===t); }
-function aggregate(dMinus1){ // dMinus1=true → 전일까지만
-  const t=todayStr(), c={};
-  Object.values(state.records).forEach(l=>l.forEach(r=>{ if(dMinus1 && r.date>=t) return; c[r.itemId]=(c[r.itemId]||0)+1; }));
-  return c;
-}
-/* ---- 토스트/스티커 ---- */
-let toastT;
-function toast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),1900); }
-function showSticker(){ document.getElementById('overlay').classList.add('show'); }
-function hideSticker(){ document.getElementById('overlay').classList.remove('show'); }
-
-/* ---- 선택 토글 ---- */
-function toggleItem(id){
-  const m=state.currentMember;
-  if(isSelected(m,id)){
-    if(selectedToday(m,id)){ state.records[m]=recs(m).filter(r=>r.itemId!==id); saveState(); renderAll(); toast('선택을 취소했습니다'); }
-    else toast('이전에 선택한 과정은 취소할 수 없습니다');
-    return;
-  }
-  if(todayCount(m)>=DAILY_LIMIT){ toast('오늘 선택 가능 횟수(5개)를 모두 사용했습니다'); return; }
-  state.records[m].push({itemId:id,date:todayStr(),ts:Date.now()});
-  saveState();
-  const card=document.getElementById('card-'+id); if(card){ card.classList.add('pop'); setTimeout(()=>card.classList.remove('pop'),360); }
-  renderAll();
-  if(todayCount(m)===DAILY_LIMIT) showSticker(); else toast('수요를 표시했습니다 ('+todayCount(m)+'/5)');
-}
-
-/* ================= 렌더링 ================= */
-function renderQuota(){
-  const m=state.currentMember, used=m?todayCount(m):0;
-  document.getElementById('remainNum').textContent=DAILY_LIMIT-used;
-  const dots=document.getElementById('dots'); dots.innerHTML='';
-  for(let i=0;i<DAILY_LIMIT;i++){ const d=document.createElement('div'); d.className='dot'+(i<used?' used':''); dots.appendChild(d); }
-}
-
-function buildTabs(){
-  const tabs=document.getElementById('tabs'), panels=document.getElementById('panels');
-  tabs.innerHTML=''; panels.innerHTML='';
-  DATA.forEach((cat,i)=>{
-    const b=document.createElement('button'); b.className='tab'+(i===0?' on':''); b.dataset.tab=cat.id;
-    b.innerHTML=cat.name+'<span class="cnt">'+cat.count+'</span>'; b.onclick=()=>switchTab(cat.id); tabs.appendChild(b);
-    const p=document.createElement('div'); p.className='panel'+(i===0?' on':''); p.id='panel-'+cat.id;
-    cat.groups.forEach(g=>{
-      const gd=document.createElement('div'); gd.className='group';
-      if(g.name){ const h=document.createElement('h3'); h.textContent=g.name; gd.appendChild(h); }
-      const grid=document.createElement('div'); grid.className='grid';
-      g.items.forEach(it=>{
-        const card=document.createElement('div'); card.className='item'; card.id='card-'+it.id;
-        card.innerHTML='<div class="nm">'+it.name+'</div>'+
-          '<button class="selbtn" id="btn-'+it.id+'"><span class="lb">선택</span></button>';
-        card.querySelector('.selbtn').onclick=()=>toggleItem(it.id);
-        grid.appendChild(card);
-      });
-      gd.appendChild(grid); p.appendChild(gd);
-    });
-    panels.appendChild(p);
-  });
-}
-
-function switchTab(id){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===id));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
-  document.getElementById('panel-'+id).classList.add('on');
-  window.scrollTo({top:document.querySelector('.tabs').offsetTop-70,behavior:'smooth'});
-}
-
-function renderItems(){
-  const m=state.currentMember, limitReached=m?todayCount(m)>=DAILY_LIMIT:false;
-  Object.values(ITEM_INDEX).forEach(it=>{
-    const card=document.getElementById('card-'+it.id), btn=document.getElementById('btn-'+it.id);
-    const sel=m&&isSelected(m,it.id), selT=m&&selectedToday(m,it.id), locked=m&&!sel&&limitReached;
-    card.classList.toggle('sel',!!sel); card.classList.toggle('locked',!!locked);
-    const lb=btn.querySelector('.lb');
-    if(!m){ lb.textContent='선택'; btn.disabled=false; }
-    else if(sel){ lb.textContent=selT?'취소':'선택됨'; btn.disabled=!selT; }
-    else if(locked){ lb.textContent='마감'; btn.disabled=true; }
-    else{ lb.textContent='선택'; btn.disabled=false; }
-  });
-}
-
-function renderResult(){
-  const body=document.getElementById('resultBody');
-  const agg=aggregate(false); // 실시간 누적
-  const arr=Object.values(ITEM_INDEX).map(it=>({...it,v:agg[it.id]||0})).sort((a,b)=>b.v-a.v);
-  const max=Math.max(1,...arr.map(r=>r.v));
-  const list=showAll?arr:arr.slice(0,10);
-  let html='<div class="resnote">🏆 실시간 누적 집계 · '+(showAll?'전체 84개':'상위 10개')+' 강의 순위입니다.</div>';
-  list.forEach((r,i)=>{
-    html+='<div class="rrow'+(i<3?' top':'')+'"><div class="rk">'+(i+1)+'</div>'+
-      '<div><div class="nm2">'+r.name+'</div><div class="cat">'+r.catName+(r.group?' · '+r.group:'')+'</div>'+
-      '<div class="track"><div class="fill" style="width:'+(r.v/max*100)+'%"></div></div></div>'+
-      '<div class="v">'+r.v+'</div></div>';
-  });
-  html+='<button class="moreBtn" id="moreBtn">'+(showAll?'▲ 접기':'▼ 전체 강의 더보기 (84개)')+'</button>';
-  body.innerHTML=html;
-  document.getElementById('moreBtn').onclick=()=>{ showAll=!showAll; renderResult(); };
-}
-
-function renderFooter(){ const m=state.currentMember;
-  document.getElementById('footToday').textContent=m?todayCount(m):0;
-  document.getElementById('footTotal').textContent=m?recs(m).length:0; }
-
-function openResultModal(){
-  renderResult();
-  const modal=document.getElementById('resultModal');
-  modal.classList.add('show');
-  modal.setAttribute('aria-hidden','false');
-}
-function closeResultModal(){
-  const modal=document.getElementById('resultModal');
-  modal.classList.remove('show');
-  modal.setAttribute('aria-hidden','true');
-}
-
-function renderAdmin(){
-  const agg=aggregate(false), members=Object.keys(state.records).filter(m=>recs(m).length>0);
-  const totalSel=Object.values(agg).reduce((a,b)=>a+b,0), t=todayStr();
-  const todaySel=Object.values(state.records).reduce((s,l)=>s+l.filter(r=>r.date===t).length,0);
-  document.getElementById('stMembers').textContent=members.length;
-  document.getElementById('stSelections').textContent=totalSel;
-  document.getElementById('stToday').textContent=todaySel;
-  let rows='<tr><th>순위</th><th>대분류</th><th>소분류</th><th>과정명</th><th>선택수(전체)</th></tr>';
-  Object.values(ITEM_INDEX).map(it=>({...it,v:agg[it.id]||0})).sort((a,b)=>b.v-a.v)
-    .forEach((it,i)=>{ rows+='<tr><td class="n">'+(i+1)+'</td><td>'+it.catName+'</td><td>'+(it.group||'-')+'</td><td>'+it.name+'</td><td class="n">'+it.v+'</td></tr>'; });
-  document.getElementById('adminTable').innerHTML=rows;
-}
-
-function renderAll(){ renderQuota(); renderItems(); renderFooter(); renderAdmin(); renderResult(); }
-
-/* ---- CSV ---- */
-function dl(n,txt){ const b=new Blob(['﻿'+txt],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=n; a.click(); }
-function q(s){ return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
-function csvAgg(){ const agg=aggregate(false); let c='순위,대분류,소분류,과정명,선택수\n';
-  Object.values(ITEM_INDEX).map(it=>({...it,v:agg[it.id]||0})).sort((a,b)=>b.v-a.v)
-    .forEach((it,i)=>{ c+=[i+1,it.catName,it.group||'',q(it.name),it.v].join(',')+'\n'; });
-  dl('수요조사_집계_'+todayStr()+'.csv',c); }
-function csvRaw(){ let c='회원ID,과정명,대분류,소분류,선택일자,선택시각\n';
-  Object.entries(state.records).forEach(([m,l])=>l.forEach(r=>{ const it=ITEM_INDEX[r.itemId]||{name:r.itemId,catName:'',group:''};
-    c+=[q(m),q(it.name),it.catName,it.group||'',r.date,new Date(r.ts).toLocaleString('ko-KR')].join(',')+'\n'; }));
-  dl('수요조사_원자료_'+todayStr()+'.csv',c); }
-
-/* ---- 바인딩 ---- */
-document.getElementById('goResult').onclick=openResultModal;
-document.getElementById('resultModalClose').onclick=closeResultModal;
-document.getElementById('resultModal').onclick=e=>{ if(e.target.id==='resultModal')closeResultModal(); };
-document.getElementById('stickerClose').onclick=hideSticker;
-document.getElementById('overlay').onclick=e=>{ if(e.target.id==='overlay')hideSticker(); };
-document.getElementById('csvAgg').onclick=csvAgg;
-document.getElementById('csvRaw').onclick=csvRaw;
-document.getElementById('resetAll').onclick=()=>{ if(confirm('모든 응답 데이터를 삭제합니다. 계속할까요?')){ state={currentMember:ME,records:{[ME]:[]}}; saveState(); showAll=false; buildTabs(); renderAll(); toast('초기화되었습니다'); } };
-
-buildTabs(); renderAll();
-</script>
+<script src="js/edu-event.js"></script>
 </body>
 </html>
