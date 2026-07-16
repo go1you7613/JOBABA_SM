@@ -52,7 +52,8 @@ function jbbToday(){ const d=new Date(); return d.getFullYear()+'-'+String(d.get
 function jbbPending(){ if(jbbState.pending.date!==jbbToday()){ jbbState.pending={date:jbbToday(),items:[]}; } return jbbState.pending.items; }
 function jbbSubmittedItems(date){ return jbbState.submissions[date]||[]; }
 function jbbSubmittedToday(){ return !!jbbState.submissions[jbbToday()]; }
-function jbbIsSelected(id){ return jbbPending().includes(id) || (jbbSubmittedToday() && jbbSubmittedItems(jbbToday()).includes(id)); }
+function jbbVoteCount(id){ const items=jbbSubmittedToday()?jbbSubmittedItems(jbbToday()):jbbPending(); return items.filter(itemId=>itemId===id).length; }
+function jbbIsSelected(id){ return jbbVoteCount(id)>0; }
 function jbbTodayCount(){ return jbbSubmittedToday()? jbbSubmittedItems(jbbToday()).length : jbbPending().length; }
 function jbbLocalAgg(){ const c={}; Object.values(jbbState.submissions).forEach(l=>l.forEach(id=>{c[id]=(c[id]||0)+1;})); return c; }
 function jbbAgg(){ if(jbbRemoteRank){ const c={}; jbbRemoteRank.forEach(r=>{c[r.itemId]=r.count;}); return c; } return jbbLocalAgg(); }
@@ -63,20 +64,40 @@ function jbbShowLimit(){ document.getElementById('jbb-limitOverlay').classList.a
 function jbbHideLimit(){ document.getElementById('jbb-limitOverlay').classList.remove('jbb-show'); }
 function jbbShowSticker(){ document.getElementById('jbb-overlay').classList.add('jbb-show'); }
 function jbbHideSticker(){ document.getElementById('jbb-overlay').classList.remove('jbb-show'); }
+function jbbPlayVoteEffect(id){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const card=document.getElementById('jbb-card-'+id); if(!card) return;
+  card.classList.remove('jbb-glow'); void card.offsetWidth; card.classList.add('jbb-glow');
+  clearTimeout(card._jbbGlowTimer); card._jbbGlowTimer=setTimeout(()=>card.classList.remove('jbb-glow'),650);
+  const colors=['#1f5fd6','#169bea','#f97316','#f5ff58'];
+  for(let i=0;i<8;i++){
+    const particle=document.createElement('span'), angle=(Math.PI*2/8)*i, distance=26+(i%3)*7;
+    particle.className='jbb-particle'; particle.style.background=colors[i%colors.length];
+    particle.style.setProperty('--jbb-px',Math.cos(angle)*distance+'px');
+    particle.style.setProperty('--jbb-py',Math.sin(angle)*distance+'px');
+    card.appendChild(particle); setTimeout(()=>particle.remove(),700);
+  }
+}
 
-function jbbToggle(id){
+function jbbAddVote(id){
   if(jbbSubmittedToday()){ jbbToast('오늘은 이미 제출을 완료했습니다. 내일 다시 참여해 주세요.'); return; }
-  const items=jbbPending(), i=items.indexOf(id);
-  if(i>=0){ items.splice(i,1); jbbSave(); jbbRenderAll(); jbbToast('선택을 해제했습니다'); return; }
+  const items=jbbPending();
   if(items.length>=JBB_LIMIT){ jbbShowLimit(); return; }
   items.push(id); jbbSave();
   const card=document.getElementById('jbb-card-'+id); if(card){ card.classList.add('jbb-pop'); setTimeout(()=>card.classList.remove('jbb-pop'),360); }
   jbbRenderAll();
+  jbbPlayVoteEffect(id);
+}
+function jbbRemoveVote(id){
+  if(jbbSubmittedToday()){ jbbToast('오늘은 이미 제출을 완료했습니다.'); return; }
+  const items=jbbPending(), i=items.lastIndexOf(id);
+  if(i<0) return;
+  items.splice(i,1); jbbSave(); jbbRenderAll(); jbbToast('1표를 취소했습니다');
 }
 function jbbSubmit(){
   if(jbbSubmittedToday()){ jbbToast('오늘은 이미 제출을 완료했습니다.'); return; }
   const items=jbbPending().slice();
-  if(items.length===0){ jbbToast('선택된 항목이 없습니다. 먼저 강의를 선택해 주세요.'); return; }
+  if(items.length===0){ jbbToast('투표한 교육과정이 없습니다. 먼저 원하는 과정에 투표해 주세요.'); return; }
   jbbState.submissions[jbbToday()]=items;
   jbbState.pending={date:jbbToday(),items:[]};
   jbbSave();
@@ -110,10 +131,15 @@ function jbbRenderQuota(){
 function jbbBuildTabs(){
   const tabs=document.getElementById('jbb-tabs'), panels=document.getElementById('jbb-panels');
   tabs.innerHTML=''; panels.innerHTML='';
-  DATA.forEach((cat,i)=>{
+  const tabItems=[{id:'all',name:'전체 보기'},...DATA];
+  tabItems.forEach((cat,i)=>{
     const b=document.createElement('button'); b.className='jbb-tab'+(i===0?' jbb-on':''); b.dataset.tab=cat.id;
     b.innerHTML=cat.name+'<span class="jbb-cnt jbb-hide" id="jbb-cnt-'+cat.id+'"></span>'; b.onclick=()=>jbbSwitchTab(cat.id); tabs.appendChild(b);
-    const p=document.createElement('div'); p.className='jbb-panel'+(i===0?' jbb-on':''); p.id='jbb-panel-'+cat.id;
+  });
+  const p=document.createElement('div'); p.className='jbb-panel jbb-on'; p.id='jbb-panel-all';
+  DATA.forEach(cat=>{
+    const section=document.createElement('section'); section.className='jbb-category-section'; section.dataset.cat=cat.id;
+    const title=document.createElement('h2'); title.className='jbb-category-title'; title.textContent=cat.name; section.appendChild(title);
     cat.groups.forEach(g=>{
       const gd=document.createElement('div'); gd.className='jbb-group';
       if(g.name){ const h=document.createElement('h3'); h.textContent=g.name; gd.appendChild(h); }
@@ -121,32 +147,33 @@ function jbbBuildTabs(){
       g.items.forEach(it=>{
         const card=document.createElement('div'); card.className='jbb-item'; card.id='jbb-card-'+it.id;
         card.innerHTML='<div class="jbb-nmwrap"><div class="jbb-nm">'+it.name+'</div>'+(it.desc?'<div class="jbb-desc">'+it.desc+'</div>':'')+'</div>'+
-          '<button class="jbb-selbtn" id="jbb-btn-'+it.id+'"><span class="jbb-lb">선택</span></button>';
-        card.querySelector('.jbb-selbtn').onclick=()=>jbbToggle(it.id);
+          '<div class="jbb-votectl"><span class="jbb-votecount" id="jbb-count-'+it.id+'">0표</span>'+
+          '<button class="jbb-votebtn jbb-minus" id="jbb-minus-'+it.id+'" type="button" aria-label="'+it.name+' 1표 취소">−</button>'+
+          '<button class="jbb-votebtn jbb-plus" id="jbb-plus-'+it.id+'" type="button" aria-label="'+it.name+' 1표 추가">+1표</button></div>';
+        card.querySelector('.jbb-minus').onclick=()=>jbbRemoveVote(it.id);
+        card.querySelector('.jbb-plus').onclick=()=>jbbAddVote(it.id);
         grid.appendChild(card);
       });
-      gd.appendChild(grid); p.appendChild(gd);
+      gd.appendChild(grid); section.appendChild(gd);
     });
-    panels.appendChild(p);
+    p.appendChild(section);
   });
+  panels.appendChild(p);
 }
 function jbbSwitchTab(id){
   document.querySelectorAll('.jbb-tab').forEach(t=>t.classList.toggle('jbb-on',t.dataset.tab===id));
-  document.querySelectorAll('.jbb-panel').forEach(p=>p.classList.remove('jbb-on'));
-  document.getElementById('jbb-panel-'+id).classList.add('jbb-on');
+  document.querySelectorAll('.jbb-category-section').forEach(section=>{ section.hidden=id!=='all'&&section.dataset.cat!==id; });
   window.scrollTo({top:document.querySelector('.jbb-tabs').offsetTop-70,behavior:'smooth'});
 }
 function jbbRenderItems(){
   const submitted=jbbSubmittedToday(), full=jbbPending().length>=JBB_LIMIT;
   Object.values(ITEM_INDEX).forEach(it=>{
-    const card=document.getElementById('jbb-card-'+it.id), btn=document.getElementById('jbb-btn-'+it.id);
-    const sel=jbbIsSelected(it.id), locked= submitted? true : (!sel && full);
+    const card=document.getElementById('jbb-card-'+it.id), plus=document.getElementById('jbb-plus-'+it.id), minus=document.getElementById('jbb-minus-'+it.id);
+    const count=jbbVoteCount(it.id), sel=count>0, locked=submitted||(!sel&&full);
     card.classList.toggle('jbb-sel',!!sel); card.classList.toggle('jbb-locked',!!locked);
-    const lb=btn.querySelector('.jbb-lb');
-    if(submitted){ lb.textContent=sel?'선택됨':'마감'; btn.disabled=true; }
-    else if(sel){ lb.textContent='취소'; btn.disabled=false; }
-    else if(full){ lb.textContent='마감'; btn.disabled=true; }
-    else{ lb.textContent='선택'; btn.disabled=false; }
+    document.getElementById('jbb-count-'+it.id).textContent=count+'표';
+    plus.disabled=submitted||full;
+    minus.disabled=submitted||count===0;
   });
 }
 function jbbRenderResult(){
@@ -171,14 +198,16 @@ function jbbRenderFooter(){
   document.getElementById('jbb-footToday').textContent=jbbTodayCount();
   document.getElementById('jbb-footTotal').textContent=Object.values(jbbState.submissions).reduce((s,l)=>s+l.length,0);
   const sb=document.getElementById('jbb-submitBtn');
-  if(sb){ if(submitted){ sb.disabled=true; sb.textContent='오늘 제출 완료'; }
-    else { const n=jbbPending().length; sb.disabled=n===0; sb.textContent='선택완료 ('+n+'/5)'; } }
+  if(sb){ if(submitted){ sb.disabled=true; sb.textContent='오늘 투표 완료'; }
+    else { const n=jbbPending().length; sb.disabled=n===0; sb.textContent='투표완료 ('+n+'/5)'; } }
 }
 function jbbOpenResult(){ jbbRefreshRank(); jbbRenderResult(); const m=document.getElementById('jbb-resultModal'); m.classList.add('jbb-show'); m.setAttribute('aria-hidden','false'); }
 function jbbCloseResult(){ const m=document.getElementById('jbb-resultModal'); m.classList.remove('jbb-show'); m.setAttribute('aria-hidden','true'); }
 function jbbRenderBadges(){
+  const all=document.getElementById('jbb-cnt-all'), total=jbbTodayCount();
+  if(all){ all.textContent=total||''; all.classList.toggle('jbb-hide',total===0); }
   DATA.forEach(cat=>{ const el=document.getElementById('jbb-cnt-'+cat.id); if(!el) return;
-    let c=0; cat.groups.forEach(g=>g.items.forEach(it=>{ if(jbbIsSelected(it.id)) c++; }));
+    let c=0; cat.groups.forEach(g=>g.items.forEach(it=>{ c+=jbbVoteCount(it.id); }));
     el.textContent=c||''; el.classList.toggle('jbb-hide', c===0); });
 }
 function jbbRenderAll(){ jbbRenderQuota(); jbbRenderItems(); jbbRenderBadges(); jbbRenderFooter(); jbbRenderResult(); }
@@ -193,5 +222,3 @@ document.getElementById('jbb-limitClose').onclick=jbbHideLimit;
 document.getElementById('jbb-limitOverlay').onclick=e=>{ if(e.target.id==='jbb-limitOverlay')jbbHideLimit(); };
 
 jbbBuildTabs(); jbbRenderAll(); jbbRefreshRank();
-
-

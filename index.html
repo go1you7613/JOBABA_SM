@@ -9,14 +9,14 @@
 <body>
 <div id="jbb-app">
   <div class="jbb-header">
-    <img class="jbb-hero-img" src="image/hero-demand-survey-foreground-v4.png" alt="잡아바 러닝센터 온라인교육 수요조사. 원하는 강의가 있다면 하루 1번, 5개 강의. 2주간 선택 가능! 가장 많이 선택된 강의를 우선적으로 제공합니다.">
+    <img class="jbb-hero-img" src="image/hero-demand-survey-foreground-v5.png" alt="잡아바 러닝센터 온라인교육 수요조사. 원하는 강의를 선택하세요! 매일 5개 선택 가능.">
   </div>
 
   <div class="jbb-qstrip">
     <div class="jbb-qcard">
       <div class="jbb-qleft">
         <div class="jbb-dots" id="jbb-dots"></div>
-        <div class="jbb-qtext">오늘 남은 선택 <b id="jbb-remainNum">5</b> / 5</div>
+        <div class="jbb-qtext">오늘 남은 투표 <b id="jbb-remainNum">5</b> / 5</div>
       </div>
     </div>
   </div>
@@ -33,11 +33,11 @@
   <div class="jbb-foot">
     <div class="jbb-inner">
       <div class="jbb-info">
-        오늘 선택 <span class="jbb-big jbb-today"><span id="jbb-footToday">0</span>/5</span>
-        &nbsp;·&nbsp; 내 누적 선택 <span class="jbb-big jbb-total" id="jbb-footTotal">0</span>개
+        오늘 투표 <span class="jbb-big jbb-today"><span id="jbb-footToday">0</span>/5</span>
+        &nbsp;·&nbsp; 내 누적 투표 <span class="jbb-big jbb-total" id="jbb-footTotal">0</span>표
       </div>
       <div class="jbb-footbtns">
-        <button class="jbb-btn jbb-btn-p" id="jbb-submitBtn" disabled>선택완료 (0/5)</button>
+        <button class="jbb-btn jbb-btn-p" id="jbb-submitBtn" disabled>투표완료 (0/5)</button>
         <button class="jbb-btn jbb-btn-o" id="jbb-goResult">📊 결과 보기</button>
       </div>
     </div>
@@ -58,8 +58,8 @@
   <div class="jbb-overlay" id="jbb-overlay">
     <div class="jbb-sticker">
       <div class="jbb-badge">🎉</div>
-      <h2>오늘 선택 완료!</h2>
-      <p>오늘 선택은 완료되었습니다.<br>내일 5번의 기회가 또 생깁니다.</p>
+      <h2>오늘 투표 완료!</h2>
+      <p>오늘 투표는 완료되었습니다.<br>내일 5표를 다시 투표할 수 있습니다.</p>
       <button class="jbb-btn jbb-btn-o" id="jbb-stickerClose">확인</button>
     </div>
   </div>
@@ -67,8 +67,8 @@
   <div class="jbb-overlay" id="jbb-limitOverlay">
     <div class="jbb-sticker">
       <div class="jbb-badge">✋</div>
-      <h2>선택은 5개까지</h2>
-      <p>하루 최대 5개까지 선택할 수 있습니다.<br>완료하려면 '선택완료'를 눌러주세요.</p>
+      <h2>하루 최대 5표</h2>
+      <p>하나의 교육과정에도 중복 투표할 수 있습니다.<br>완료하려면 '투표완료'를 눌러주세요.</p>
       <button class="jbb-btn jbb-btn-o" id="jbb-limitClose">확인</button>
     </div>
   </div>
