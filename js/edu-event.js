@@ -35,7 +35,7 @@ DATA.forEach(cat=>{ let n=0; cat.count=0;
    비워두면 로컬(localStorage)로만 동작(PoC 폴백).
    대상 시트: 1-HBMpIWb66CLE6H3Pdx2KMNtxsHGzufvMuEm7VQ1M2o */
 const JBB_SHEET_ENDPOINT='https://script.google.com/macros/s/AKfycbyJT-4UUgC5hlrD2u9W0WLgL10U1e7xrT4ZJNwSU1I5SlGSdht9kf6XsLhCUVJXgCWk/exec';
-const JBB_LIMIT=5, JBB_STORE='JBB_SURVEY_V2';
+const JBB_LIMIT=5, JBB_STORE='JBB_SURVEY_V2', JBB_CONSENT_VERSION='2026-07-21';
 
 function jbbUuid(){ return 'dev-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10); }
 let jbbDevice=localStorage.getItem('JBB_DEVICE');
@@ -94,21 +94,35 @@ function jbbRemoveVote(id){
   if(i<0) return;
   items.splice(i,1); jbbSave(); jbbRenderAll(); jbbToast('1표를 취소했습니다');
 }
+function jbbNormalizePhone(value){ return String(value||'').replace(/\D/g,''); }
+function jbbValidPhone(phone){ return /^01[016789]\d{7,8}$/.test(phone); }
+function jbbFocusPrivacy(message, target){
+  jbbToast(message);
+  document.getElementById('jbb-privacySection').scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(()=>target.focus(),350);
+}
 function jbbSubmit(){
   if(jbbSubmittedToday()){ jbbToast('오늘은 이미 제출을 완료했습니다.'); return; }
   const items=jbbPending().slice();
   if(items.length===0){ jbbToast('투표한 교육과정이 없습니다. 먼저 원하는 과정에 투표해 주세요.'); return; }
+  const phoneInput=document.getElementById('jbb-phone');
+  const consentInput=document.getElementById('jbb-privacyConsent');
+  const phone=jbbNormalizePhone(phoneInput.value);
+  if(!jbbValidPhone(phone)){ jbbFocusPrivacy('올바른 휴대전화번호를 입력해 주세요.',phoneInput); return; }
+  if(!consentInput.checked){ jbbFocusPrivacy('개인정보 수집·이용에 동의해 주세요.',consentInput); return; }
   jbbState.submissions[jbbToday()]=items;
   jbbState.pending={date:jbbToday(),items:[]};
   jbbSave();
-  jbbPost(items);
+  jbbPost(items,phone);
+  phoneInput.value='';
+  consentInput.checked=false;
   jbbShowSticker();
   jbbRenderAll();
-  jbbRefreshRank();
 }
-function jbbPost(items){
+function jbbPost(items,phone){
   if(!JBB_SHEET_ENDPOINT) return;
-  const payload={ action:'submit', deviceToken:jbbDevice, date:jbbToday(), ts:Date.now(),
+  const payload={ action:'submit', deviceToken:jbbDevice, date:jbbToday(), ts:Date.now(), phone,
+    privacyConsent:true, privacyConsentVersion:JBB_CONSENT_VERSION, consentedAt:new Date().toISOString(),
     items: items.map(id=>{ const it=ITEM_INDEX[id]||{}; return {itemId:id, cat:it.catName, group:it.group, name:it.name}; }) };
   try{ fetch(JBB_SHEET_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}); }catch(e){}
 }
@@ -201,7 +215,16 @@ function jbbRenderFooter(){
   if(sb){ if(submitted){ sb.disabled=true; sb.textContent='오늘 투표 완료'; }
     else { const n=jbbPending().length; sb.disabled=n===0; sb.textContent='투표완료 ('+n+'/5)'; } }
 }
-function jbbOpenResult(){ jbbRefreshRank(); jbbRenderResult(); const m=document.getElementById('jbb-resultModal'); m.classList.add('jbb-show'); m.setAttribute('aria-hidden','false'); }
+function jbbRenderPrivacy(){
+  const submitted=jbbSubmittedToday();
+  const section=document.getElementById('jbb-privacySection');
+  const phoneInput=document.getElementById('jbb-phone');
+  const consentInput=document.getElementById('jbb-privacyConsent');
+  section.classList.toggle('jbb-complete',submitted);
+  phoneInput.disabled=submitted;
+  consentInput.disabled=submitted;
+}
+function jbbOpenResult(){ jbbToast('투표 결과는 공개하지 않습니다.'); }
 function jbbCloseResult(){ const m=document.getElementById('jbb-resultModal'); m.classList.remove('jbb-show'); m.setAttribute('aria-hidden','true'); }
 function jbbRenderBadges(){
   const all=document.getElementById('jbb-cnt-all'), total=jbbTodayCount();
@@ -210,9 +233,8 @@ function jbbRenderBadges(){
     let c=0; cat.groups.forEach(g=>g.items.forEach(it=>{ c+=jbbVoteCount(it.id); }));
     el.textContent=c||''; el.classList.toggle('jbb-hide', c===0); });
 }
-function jbbRenderAll(){ jbbRenderQuota(); jbbRenderItems(); jbbRenderBadges(); jbbRenderFooter(); jbbRenderResult(); }
+function jbbRenderAll(){ jbbRenderQuota(); jbbRenderItems(); jbbRenderBadges(); jbbRenderFooter(); jbbRenderPrivacy(); }
 
-document.getElementById('jbb-goResult').onclick=jbbOpenResult;
 document.getElementById('jbb-resultModalClose').onclick=jbbCloseResult;
 document.getElementById('jbb-resultModal').onclick=e=>{ if(e.target.id==='jbb-resultModal')jbbCloseResult(); };
 document.getElementById('jbb-submitBtn').onclick=jbbSubmit;
@@ -221,4 +243,4 @@ document.getElementById('jbb-overlay').onclick=e=>{ if(e.target.id==='jbb-overla
 document.getElementById('jbb-limitClose').onclick=jbbHideLimit;
 document.getElementById('jbb-limitOverlay').onclick=e=>{ if(e.target.id==='jbb-limitOverlay')jbbHideLimit(); };
 
-jbbBuildTabs(); jbbRenderAll(); jbbRefreshRank();
+jbbBuildTabs(); jbbRenderAll();

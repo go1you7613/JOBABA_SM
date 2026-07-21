@@ -25,6 +25,29 @@
     <div class="jbb-tabs" id="jbb-tabs"></div>
     <div id="jbb-panels"></div>
     <section class="jbb-resultSection" id="jbb-resultSection" hidden></section>
+    <section class="jbb-privacy" id="jbb-privacySection" aria-labelledby="jbb-privacyTitle">
+      <div class="jbb-privacyHead">
+        <h2 id="jbb-privacyTitle">매일 투표 참여정보</h2>
+        <p>투표를 완료하려면 휴대전화번호 입력과 개인정보 수집·이용 동의가 필요합니다.</p>
+      </div>
+      <div class="jbb-formField">
+        <label for="jbb-phone">휴대전화번호 <span aria-hidden="true">*</span></label>
+        <input id="jbb-phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="13" placeholder="010-1234-5678" aria-describedby="jbb-phoneHelp" aria-required="true" required />
+        <p class="jbb-fieldHelp" id="jbb-phoneHelp">본인 확인 및 이벤트 안내에 사용됩니다.</p>
+      </div>
+      <div class="jbb-formField">
+        <label for="jbb-privacyNotice">개인정보 수집·이용 안내</label>
+        <textarea id="jbb-privacyNotice" class="jbb-privacyNotice" rows="7" readonly>1. 수집 항목: 휴대전화번호, 투표 내역, 참여 일시, 기기 식별값
+2. 수집·이용 목적: 이벤트 참여 확인, 중복 참여 방지, 당첨자 확인 및 경품 안내, 온라인교육 수요조사 결과 분석
+3. 보유·이용 기간: 이벤트 종료 및 경품 지급 완료 후 30일 이내 파기합니다. 단, 관계 법령에 따라 보관이 필요한 경우 해당 법령에서 정한 기간 동안 보관합니다.
+4. 동의 거부 권리 및 불이익: 개인정보 수집·이용에 동의하지 않을 권리가 있습니다. 다만, 동의를 거부하면 이벤트 투표 참여가 제한됩니다.
+5. 수집한 개인정보는 위 목적 외 용도로 이용하지 않습니다.</textarea>
+      </div>
+      <label class="jbb-consent" for="jbb-privacyConsent">
+        <input id="jbb-privacyConsent" type="checkbox" aria-required="true" required />
+        <span>개인정보 수집·이용 안내를 확인했으며 이에 동의합니다. <b>(필수)</b></span>
+      </label>
+    </section>
     <div class="jbb-notice">
       가장 많이 선택된 강의를 <b>우선적 제공</b>합니다. 사정에 따라 일부 강의는 제공이 어려울 수 있습니다.
     </div>
@@ -38,7 +61,7 @@
       </div>
       <div class="jbb-footbtns">
         <button class="jbb-btn jbb-btn-p" id="jbb-submitBtn" disabled>투표완료 (0/5)</button>
-        <button class="jbb-btn jbb-btn-o" id="jbb-goResult">📊 결과 보기</button>
+        <button class="jbb-btn jbb-btn-o" id="jbb-goResult" type="button" disabled aria-disabled="true" title="투표 결과는 공개하지 않습니다.">결과 비공개</button>
       </div>
     </div>
   </div>
