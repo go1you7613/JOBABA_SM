@@ -229,11 +229,13 @@ function jbbRenderFooter(){
 }
 function jbbRenderPrivacy(){
   const submitted=jbbSubmittedToday(), complete=submitted||!!jbbParticipant;
+  const wrap=document.querySelector('.jbb-privacyWrap');
   const section=document.getElementById('jbb-privacySection');
   const phoneInput=document.getElementById('jbb-phone');
   const consentInput=document.getElementById('jbb-privacyConsent');
   const confirmBtn=document.getElementById('jbb-participantConfirm');
   const cancelBtn=document.getElementById('jbb-participantCancel');
+  wrap.hidden=complete;
   section.classList.toggle('jbb-complete',complete);
   phoneInput.disabled=complete;
   consentInput.disabled=complete;
