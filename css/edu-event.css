@@ -20,7 +20,7 @@
 #jbb-app .jbb-header{--jbb-grid-size:min(29.1px,calc((100vw - 32px)*.04286));background-color:#169bea;background-image:linear-gradient(rgba(255,255,255,.14) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.14) 1px,transparent 1px);background-size:var(--jbb-grid-size) var(--jbb-grid-size);background-position:center calc(32px + var(--jbb-grid-size));display:flex;justify-content:center;align-items:center;padding:32px 16px 14px;text-align:center;line-height:0;overflow:hidden}
 #jbb-app .jbb-hero-img{display:block;width:min(760px,100%);height:auto}
 /* quota strip */
-#jbb-app .jbb-qstrip{max-width:1180px;margin:-20px auto 0;padding:0 20px;position:relative;z-index:5}
+#jbb-app .jbb-qstrip{max-width:1180px;margin:16px auto 0;padding:0 20px;position:relative;z-index:5}
 #jbb-app .jbb-qcard{position:relative;background:#fff;border:0;border-radius:16px;box-shadow:0 8px 24px rgba(17,24,39,.12);padding:18px 22px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center}
 #jbb-app .jbb-qleft{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;width:100%}
 #jbb-app .jbb-dots{display:flex;gap:6px}
@@ -98,7 +98,8 @@
 .jbb-resultModalBody{padding:18px 20px 22px;overflow:auto}
 @keyframes jbb-fade{from{opacity:0}to{opacity:1}}
 /* privacy */
-#jbb-app .jbb-privacy{margin-top:32px;background:#fff;border:1px solid #dbe3ef;border-radius:16px;padding:24px;box-shadow:0 8px 24px rgba(17,24,39,.06)}
+#jbb-app .jbb-privacyWrap{max-width:1180px;margin:-20px auto 0;padding:0 20px;position:relative;z-index:6}
+#jbb-app .jbb-privacy{background:#fff;border:1px solid #dbe3ef;border-radius:16px;padding:24px;box-shadow:0 8px 24px rgba(17,24,39,.1)}
 #jbb-app .jbb-privacy.jbb-complete{opacity:.68;background:#f8fafc}
 #jbb-app .jbb-privacyHead h2{margin:0;font-size:22px;color:var(--jbb-brand-d);font-weight:900}
 #jbb-app .jbb-privacyHead p{margin:7px 0 20px;font-size:15px;color:var(--jbb-muted)}
@@ -112,6 +113,8 @@
 #jbb-app .jbb-consent{display:flex;align-items:flex-start;gap:10px;margin-top:16px;font-size:15px;line-height:1.5;cursor:pointer}
 #jbb-app .jbb-consent input{flex:0 0 auto;width:20px;height:20px;margin:1px 0 0;accent-color:var(--jbb-brand)}
 #jbb-app .jbb-consent b{color:var(--jbb-danger)}
+#jbb-app .jbb-privacyActions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+#jbb-app .jbb-privacyActions .jbb-btn{min-width:110px}
 /* notice */
 #jbb-app .jbb-notice{margin-top:24px;background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:16px 18px;font-size:15px;color:#9a3412}
 #jbb-app .jbb-notice b{color:var(--jbb-accent-d)}
@@ -126,6 +129,7 @@
 .jbb-sticker .jbb-badge{font-size:52px;line-height:1}
 .jbb-sticker h2{font-size:20px;margin:14px 0 8px;color:#17469e}
 .jbb-sticker p{font-size:14px;color:#6b7280;margin:0 0 18px}
+.jbb-confirmBtns{display:flex;justify-content:center;gap:8px}
 /* footer */
 .jbb-foot{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e5e7eb;box-shadow:0 -4px 16px rgba(0,0,0,.06);z-index:9999;font-family:'Paperlogy','Malgun Gothic','맑은 고딕',sans-serif}
 .jbb-foot .jbb-inner{max-width:1180px;margin:0 auto;padding:13px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
@@ -138,7 +142,8 @@
   #jbb-app .jbb-wrap{padding:0 14px 190px}
   #jbb-app .jbb-hero-img{width:112%;max-width:none}
   #jbb-app .jbb-grid{grid-template-columns:1fr}
-  #jbb-app .jbb-qstrip{margin-top:-22px}
+  #jbb-app .jbb-privacyWrap{margin-top:-14px;padding:0 14px}
+  #jbb-app .jbb-qstrip{margin-top:14px;padding:0 14px}
   #jbb-app .jbb-qcard{flex-direction:column;align-items:stretch;padding:18px 16px}
   #jbb-app .jbb-tabs{grid-template-columns:repeat(2,1fr)}
   #jbb-app .jbb-tab{min-height:50px;font-size:14px;white-space:normal;line-height:1.25}
@@ -147,6 +152,7 @@
   #jbb-app .jbb-item{align-items:flex-start;flex-direction:column}
   #jbb-app .jbb-votectl{width:100%;justify-content:flex-end}
   #jbb-app .jbb-privacy{padding:20px 16px}
+  #jbb-app .jbb-privacyActions .jbb-btn{flex:1 1 0;min-width:0}
   .jbb-foot .jbb-inner{align-items:stretch;padding:10px 14px}
   .jbb-footbtns{width:100%}
   .jbb-footbtns .jbb-btn{flex:1 1 0}

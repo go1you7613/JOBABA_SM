@@ -36,6 +36,7 @@ DATA.forEach(cat=>{ let n=0; cat.count=0;
    대상 시트: 1-HBMpIWb66CLE6H3Pdx2KMNtxsHGzufvMuEm7VQ1M2o */
 const JBB_SHEET_ENDPOINT='https://script.google.com/macros/s/AKfycbyJT-4UUgC5hlrD2u9W0WLgL10U1e7xrT4ZJNwSU1I5SlGSdht9kf6XsLhCUVJXgCWk/exec';
 const JBB_LIMIT=5, JBB_STORE='JBB_SURVEY_V2', JBB_CONSENT_VERSION='2026-07-21';
+const JOBABA_MAIN_URL='https://job.gg.go.kr/';
 
 function jbbUuid(){ return 'dev-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10); }
 let jbbDevice=localStorage.getItem('JBB_DEVICE');
@@ -47,6 +48,7 @@ let jbbState=jbbLoad();
 if(!jbbState.submissions) jbbState.submissions={};
 if(!jbbState.pending) jbbState.pending={date:'',items:[]};
 let jbbShowAll=false, jbbRemoteRank=null, jbbRemoteTotals=null;
+let jbbParticipant=null;
 
 function jbbToday(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function jbbPending(){ if(jbbState.pending.date!==jbbToday()){ jbbState.pending={date:jbbToday(),items:[]}; } return jbbState.pending.items; }
@@ -81,6 +83,7 @@ function jbbPlayVoteEffect(id){
 
 function jbbAddVote(id){
   if(jbbSubmittedToday()){ jbbToast('오늘은 이미 제출을 완료했습니다. 내일 다시 참여해 주세요.'); return; }
+  if(!jbbParticipant){ jbbFocusPrivacy('투표 참여정보를 먼저 입력해 주세요.',document.getElementById('jbb-phone')); return; }
   const items=jbbPending();
   if(items.length>=JBB_LIMIT){ jbbShowLimit(); return; }
   items.push(id); jbbSave();
@@ -96,33 +99,42 @@ function jbbRemoveVote(id){
 }
 function jbbNormalizePhone(value){ return String(value||'').replace(/\D/g,''); }
 function jbbValidPhone(phone){ return /^01[016789]\d{7,8}$/.test(phone); }
+function jbbMaskPhone(phone){ return phone.replace(/^(01\d)(\d{3,4})(\d{4})$/,'$1-****-$3'); }
 function jbbFocusPrivacy(message, target){
   jbbToast(message);
   document.getElementById('jbb-privacySection').scrollIntoView({behavior:'smooth',block:'center'});
   setTimeout(()=>target.focus(),350);
 }
-function jbbSubmit(){
-  if(jbbSubmittedToday()){ jbbToast('오늘은 이미 제출을 완료했습니다.'); return; }
-  const items=jbbPending().slice();
-  if(items.length===0){ jbbToast('투표한 교육과정이 없습니다. 먼저 원하는 과정에 투표해 주세요.'); return; }
+function jbbConfirmParticipant(){
+  if(jbbSubmittedToday()||jbbParticipant) return;
   const phoneInput=document.getElementById('jbb-phone');
   const consentInput=document.getElementById('jbb-privacyConsent');
   const phone=jbbNormalizePhone(phoneInput.value);
   if(!jbbValidPhone(phone)){ jbbFocusPrivacy('올바른 휴대전화번호를 입력해 주세요.',phoneInput); return; }
   if(!consentInput.checked){ jbbFocusPrivacy('개인정보 수집·이용에 동의해 주세요.',consentInput); return; }
+  jbbParticipant={phone,consentedAt:new Date().toISOString()};
+  phoneInput.value=jbbMaskPhone(phone);
+  jbbRenderAll();
+  jbbToast('투표 참여정보 입력이 완료되었습니다.');
+}
+function jbbShowCancel(){ const el=document.getElementById('jbb-cancelOverlay'); el.classList.add('jbb-show'); el.setAttribute('aria-hidden','false'); }
+function jbbHideCancel(){ const el=document.getElementById('jbb-cancelOverlay'); el.classList.remove('jbb-show'); el.setAttribute('aria-hidden','true'); }
+function jbbSubmit(){
+  if(jbbSubmittedToday()){ jbbToast('오늘은 이미 제출을 완료했습니다.'); return; }
+  const items=jbbPending().slice();
+  if(items.length===0){ jbbToast('투표한 교육과정이 없습니다. 먼저 원하는 과정에 투표해 주세요.'); return; }
+  if(!jbbParticipant){ jbbFocusPrivacy('투표 참여정보를 먼저 입력해 주세요.',document.getElementById('jbb-phone')); return; }
   jbbState.submissions[jbbToday()]=items;
   jbbState.pending={date:jbbToday(),items:[]};
   jbbSave();
-  jbbPost(items,phone);
-  phoneInput.value='';
-  consentInput.checked=false;
+  jbbPost(items,jbbParticipant);
   jbbShowSticker();
   jbbRenderAll();
 }
-function jbbPost(items,phone){
+function jbbPost(items,participant){
   if(!JBB_SHEET_ENDPOINT) return;
-  const payload={ action:'submit', deviceToken:jbbDevice, date:jbbToday(), ts:Date.now(), phone,
-    privacyConsent:true, privacyConsentVersion:JBB_CONSENT_VERSION, consentedAt:new Date().toISOString(),
+  const payload={ action:'submit', deviceToken:jbbDevice, date:jbbToday(), ts:Date.now(), phone:participant.phone,
+    privacyConsent:true, privacyConsentVersion:JBB_CONSENT_VERSION, consentedAt:participant.consentedAt,
     items: items.map(id=>{ const it=ITEM_INDEX[id]||{}; return {itemId:id, cat:it.catName, group:it.group, name:it.name}; }) };
   try{ fetch(JBB_SHEET_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}); }catch(e){}
 }
@@ -183,11 +195,11 @@ function jbbRenderItems(){
   const submitted=jbbSubmittedToday(), full=jbbPending().length>=JBB_LIMIT;
   Object.values(ITEM_INDEX).forEach(it=>{
     const card=document.getElementById('jbb-card-'+it.id), plus=document.getElementById('jbb-plus-'+it.id), minus=document.getElementById('jbb-minus-'+it.id);
-    const count=jbbVoteCount(it.id), sel=count>0, locked=submitted||(!sel&&full);
+    const count=jbbVoteCount(it.id), sel=count>0, locked=submitted||!jbbParticipant||(!sel&&full);
     card.classList.toggle('jbb-sel',!!sel); card.classList.toggle('jbb-locked',!!locked);
     document.getElementById('jbb-count-'+it.id).textContent=count+'표';
-    plus.disabled=submitted||full;
-    minus.disabled=submitted||count===0;
+    plus.disabled=submitted||!jbbParticipant||full;
+    minus.disabled=submitted||!jbbParticipant||count===0;
   });
 }
 function jbbRenderResult(){
@@ -213,16 +225,21 @@ function jbbRenderFooter(){
   document.getElementById('jbb-footTotal').textContent=Object.values(jbbState.submissions).reduce((s,l)=>s+l.length,0);
   const sb=document.getElementById('jbb-submitBtn');
   if(sb){ if(submitted){ sb.disabled=true; sb.textContent='오늘 투표 완료'; }
-    else { const n=jbbPending().length; sb.disabled=n===0; sb.textContent='투표완료 ('+n+'/5)'; } }
+    else { const n=jbbPending().length; sb.disabled=!jbbParticipant||n===0; sb.textContent='투표완료 ('+n+'/5)'; } }
 }
 function jbbRenderPrivacy(){
-  const submitted=jbbSubmittedToday();
+  const submitted=jbbSubmittedToday(), complete=submitted||!!jbbParticipant;
   const section=document.getElementById('jbb-privacySection');
   const phoneInput=document.getElementById('jbb-phone');
   const consentInput=document.getElementById('jbb-privacyConsent');
-  section.classList.toggle('jbb-complete',submitted);
-  phoneInput.disabled=submitted;
-  consentInput.disabled=submitted;
+  const confirmBtn=document.getElementById('jbb-participantConfirm');
+  const cancelBtn=document.getElementById('jbb-participantCancel');
+  section.classList.toggle('jbb-complete',complete);
+  phoneInput.disabled=complete;
+  consentInput.disabled=complete;
+  confirmBtn.disabled=complete;
+  cancelBtn.disabled=complete;
+  confirmBtn.textContent=complete?'입력 완료':'입력완료';
 }
 function jbbOpenResult(){ jbbToast('투표 결과는 공개하지 않습니다.'); }
 function jbbCloseResult(){ const m=document.getElementById('jbb-resultModal'); m.classList.remove('jbb-show'); m.setAttribute('aria-hidden','true'); }
@@ -242,5 +259,10 @@ document.getElementById('jbb-stickerClose').onclick=jbbHideSticker;
 document.getElementById('jbb-overlay').onclick=e=>{ if(e.target.id==='jbb-overlay')jbbHideSticker(); };
 document.getElementById('jbb-limitClose').onclick=jbbHideLimit;
 document.getElementById('jbb-limitOverlay').onclick=e=>{ if(e.target.id==='jbb-limitOverlay')jbbHideLimit(); };
+document.getElementById('jbb-participantConfirm').onclick=jbbConfirmParticipant;
+document.getElementById('jbb-participantCancel').onclick=jbbShowCancel;
+document.getElementById('jbb-cancelStay').onclick=jbbHideCancel;
+document.getElementById('jbb-cancelConfirm').onclick=()=>{ window.location.href=JOBABA_MAIN_URL; };
+document.getElementById('jbb-cancelOverlay').onclick=e=>{ if(e.target.id==='jbb-cancelOverlay')jbbHideCancel(); };
 
 jbbBuildTabs(); jbbRenderAll();
