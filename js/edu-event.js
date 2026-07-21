@@ -108,11 +108,13 @@ function jbbFocusPrivacy(message, target){
 function jbbConfirmParticipant(){
   if(jbbSubmittedToday()||jbbParticipant) return;
   const phoneInput=document.getElementById('jbb-phone');
+  const ageInput=document.getElementById('jbb-ageConsent');
   const consentInput=document.getElementById('jbb-privacyConsent');
   const phone=jbbNormalizePhone(phoneInput.value);
   if(!jbbValidPhone(phone)){ jbbFocusPrivacy('올바른 휴대전화번호를 입력해 주세요.',phoneInput); return; }
+  if(!ageInput.checked){ jbbFocusPrivacy('만 14세 이상만 수요조사에 참여할 수 있습니다.',ageInput); return; }
   if(!consentInput.checked){ jbbFocusPrivacy('개인정보 수집·이용에 동의해 주세요.',consentInput); return; }
-  jbbParticipant={phone,consentedAt:new Date().toISOString()};
+  jbbParticipant={phone,ageOver14:true,consentedAt:new Date().toISOString()};
   phoneInput.value=jbbMaskPhone(phone);
   jbbRenderAll();
   jbbToast('수요조사 참여정보 입력이 완료되었습니다.');
@@ -134,7 +136,7 @@ function jbbSubmit(){
 function jbbPost(items,participant){
   if(!JBB_SHEET_ENDPOINT) return;
   const payload={ action:'submit', deviceToken:jbbDevice, date:jbbToday(), ts:Date.now(), phone:participant.phone,
-    privacyConsent:true, privacyConsentVersion:JBB_CONSENT_VERSION, consentedAt:participant.consentedAt,
+    ageOver14:participant.ageOver14===true, privacyConsent:true, privacyConsentVersion:JBB_CONSENT_VERSION, consentedAt:participant.consentedAt,
     items: items.map(id=>{ const it=ITEM_INDEX[id]||{}; return {itemId:id, cat:it.catName, group:it.group, name:it.name}; }) };
   try{ fetch(JBB_SHEET_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}); }catch(e){}
 }
@@ -232,12 +234,14 @@ function jbbRenderPrivacy(){
   const wrap=document.querySelector('.jbb-privacyWrap');
   const section=document.getElementById('jbb-privacySection');
   const phoneInput=document.getElementById('jbb-phone');
+  const ageInput=document.getElementById('jbb-ageConsent');
   const consentInput=document.getElementById('jbb-privacyConsent');
   const confirmBtn=document.getElementById('jbb-participantConfirm');
   const cancelBtn=document.getElementById('jbb-participantCancel');
   wrap.hidden=complete;
   section.classList.toggle('jbb-complete',complete);
   phoneInput.disabled=complete;
+  ageInput.disabled=complete;
   consentInput.disabled=complete;
   confirmBtn.disabled=complete;
   cancelBtn.disabled=complete;
