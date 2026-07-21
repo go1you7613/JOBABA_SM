@@ -83,7 +83,7 @@ function jbbPlayVoteEffect(id){
 
 function jbbAddVote(id){
   if(jbbSubmittedToday()){ jbbToast('오늘은 이미 제출을 완료했습니다. 내일 다시 참여해 주세요.'); return; }
-  if(!jbbParticipant){ jbbFocusPrivacy('투표 참여정보를 먼저 입력해 주세요.',document.getElementById('jbb-phone')); return; }
+  if(!jbbParticipant){ jbbFocusPrivacy('수요조사 참여정보를 먼저 입력해 주세요.',document.getElementById('jbb-phone')); return; }
   const items=jbbPending();
   if(items.length>=JBB_LIMIT){ jbbShowLimit(); return; }
   items.push(id); jbbSave();
@@ -115,7 +115,7 @@ function jbbConfirmParticipant(){
   jbbParticipant={phone,consentedAt:new Date().toISOString()};
   phoneInput.value=jbbMaskPhone(phone);
   jbbRenderAll();
-  jbbToast('투표 참여정보 입력이 완료되었습니다.');
+  jbbToast('수요조사 참여정보 입력이 완료되었습니다.');
 }
 function jbbShowCancel(){ const el=document.getElementById('jbb-cancelOverlay'); el.classList.add('jbb-show'); el.setAttribute('aria-hidden','false'); }
 function jbbHideCancel(){ const el=document.getElementById('jbb-cancelOverlay'); el.classList.remove('jbb-show'); el.setAttribute('aria-hidden','true'); }
@@ -123,7 +123,7 @@ function jbbSubmit(){
   if(jbbSubmittedToday()){ jbbToast('오늘은 이미 제출을 완료했습니다.'); return; }
   const items=jbbPending().slice();
   if(items.length===0){ jbbToast('투표한 교육과정이 없습니다. 먼저 원하는 과정에 투표해 주세요.'); return; }
-  if(!jbbParticipant){ jbbFocusPrivacy('투표 참여정보를 먼저 입력해 주세요.',document.getElementById('jbb-phone')); return; }
+  if(!jbbParticipant){ jbbFocusPrivacy('수요조사 참여정보를 먼저 입력해 주세요.',document.getElementById('jbb-phone')); return; }
   jbbState.submissions[jbbToday()]=items;
   jbbState.pending={date:jbbToday(),items:[]};
   jbbSave();
