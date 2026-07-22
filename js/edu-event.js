@@ -52,6 +52,7 @@ if(!jbbState.pending) jbbState.pending={date:'',items:[]};
 if(!jbbState.entries) jbbState.entries={};
 if(!jbbState.submissionIds) jbbState.submissionIds={};
 let jbbShowAll=false, jbbRemoteRank=null, jbbRemoteTotals=null;
+let jbbSubmitBusy=false, jbbEntryBusy=false;
 let jbbEntryRevealed=jbbSubmittedToday()&&!jbbEntrySubmittedToday();
 
 function jbbToday(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -68,6 +69,19 @@ function jbbAgg(){ if(jbbRemoteRank){ const c={}; jbbRemoteRank.forEach(r=>{c[r.
 
 let jbbToastT;
 function jbbToast(m){ const el=document.getElementById('jbb-toast'); el.textContent=m; el.classList.add('jbb-show'); clearTimeout(jbbToastT); jbbToastT=setTimeout(()=>el.classList.remove('jbb-show'),1900); }
+function jbbShowLoading(message){
+  const overlay=document.getElementById('jbb-loadingOverlay');
+  document.getElementById('jbb-loadingMessage').textContent=message;
+  overlay.classList.add('jbb-show');
+  overlay.setAttribute('aria-hidden','false');
+  document.getElementById('jbb-app').setAttribute('aria-busy','true');
+}
+function jbbHideLoading(){
+  const overlay=document.getElementById('jbb-loadingOverlay');
+  overlay.classList.remove('jbb-show');
+  overlay.setAttribute('aria-hidden','true');
+  document.getElementById('jbb-app').setAttribute('aria-busy','false');
+}
 function jbbShowLimit(){ document.getElementById('jbb-limitOverlay').classList.add('jbb-show'); }
 function jbbHideLimit(){ document.getElementById('jbb-limitOverlay').classList.remove('jbb-show'); }
 function jbbShowEventModal(mode){
@@ -143,9 +157,10 @@ function jbbEntryFormValid(){
 }
 function jbbUpdateEntryButton(){
   const button=document.getElementById('jbb-entrySubmit');
-  button.disabled=!jbbSubmittedToday()||jbbEntrySubmittedToday()||!jbbEntryFormValid();
+  button.disabled=jbbEntryBusy||!jbbSubmittedToday()||jbbEntrySubmittedToday()||!jbbEntryFormValid();
 }
 async function jbbSubmitEntry(){
+  if(jbbEntryBusy) return;
   if(!jbbSubmittedToday()){ jbbToast('먼저 오늘의 수요조사 투표를 완료해 주세요.'); return; }
   if(jbbEntrySubmittedToday()){ jbbToast('오늘 이벤트 응모를 이미 완료했습니다.'); return; }
   const phoneInput=document.getElementById('jbb-phone');
@@ -158,31 +173,48 @@ async function jbbSubmitEntry(){
   if(!ageInput.checked){ jbbFocusEntry('만 14세 이상만 이벤트에 응모할 수 있습니다.',ageInput); return; }
   if(!consentInput.checked){ jbbFocusEntry('개인정보 수집·이용에 동의해 주세요.',consentInput); return; }
   const participant={phone,eventNoticeConfirmed:true,ageOver14:true,privacyConsent:true,consentedAt:new Date().toISOString()};
-  document.getElementById('jbb-entrySubmit').disabled=true;
-  const sent=await jbbPostEntry(participant);
-  if(!sent){ jbbToast('응모 정보를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.'); jbbUpdateEntryButton(); return; }
-  jbbState.entries[jbbToday()]={submittedAt:Date.now()};
-  jbbSave();
-  phoneInput.value=jbbMaskPhone(phone);
-  jbbRenderAll();
-  jbbShowEventModal('complete');
+  jbbEntryBusy=true;
+  jbbUpdateEntryButton();
+  jbbShowLoading('이벤트 응모 정보를 저장하고 있습니다.');
+  try{
+    const sent=await jbbPostEntry(participant);
+    if(!sent){ jbbToast('응모 정보를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.'); return; }
+    jbbState.entries[jbbToday()]={submittedAt:Date.now()};
+    jbbSave();
+    phoneInput.value=jbbMaskPhone(phone);
+    jbbRenderAll();
+    jbbShowEventModal('complete');
+  }finally{
+    jbbEntryBusy=false;
+    jbbHideLoading();
+    jbbUpdateEntryButton();
+  }
 }
 function jbbShowCancel(){ const el=document.getElementById('jbb-cancelOverlay'); el.classList.add('jbb-show'); el.setAttribute('aria-hidden','false'); }
 function jbbHideCancel(){ const el=document.getElementById('jbb-cancelOverlay'); el.classList.remove('jbb-show'); el.setAttribute('aria-hidden','true'); }
 async function jbbSubmit(){
+  if(jbbSubmitBusy) return;
   if(jbbSubmittedToday()){ jbbToast('오늘은 이미 제출을 완료했습니다.'); return; }
   const items=jbbPending().slice();
   if(items.length===0){ jbbToast('투표한 교육과정이 없습니다. 먼저 원하는 과정에 투표해 주세요.'); return; }
   const submissionId=jbbSubmissionId();
-  document.getElementById('jbb-submitBtn').disabled=true;
-  const sent=await jbbPostVote(items,submissionId);
-  if(!sent){ jbbToast('투표를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.'); jbbRenderFooter(); return; }
-  jbbState.submissions[jbbToday()]=items;
-  jbbState.submissionIds[jbbToday()]=submissionId;
-  jbbState.pending={date:jbbToday(),items:[]};
-  jbbSave();
-  jbbRenderAll();
-  jbbShowEventModal('intro');
+  jbbSubmitBusy=true;
+  jbbRenderFooter();
+  jbbShowLoading('투표 내용을 저장하고 있습니다.');
+  try{
+    const sent=await jbbPostVote(items,submissionId);
+    if(!sent){ jbbToast('투표를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.'); return; }
+    jbbState.submissions[jbbToday()]=items;
+    jbbState.submissionIds[jbbToday()]=submissionId;
+    jbbState.pending={date:jbbToday(),items:[]};
+    jbbSave();
+    jbbRenderAll();
+    jbbShowEventModal('intro');
+  }finally{
+    jbbSubmitBusy=false;
+    jbbHideLoading();
+    jbbRenderFooter();
+  }
 }
 async function jbbPostPayload(payload){
   if(!JBB_SHEET_ENDPOINT) return true;
@@ -204,7 +236,9 @@ function jbbCheckServerRecord(kind,submissionId){
     const timer=setTimeout(()=>finish(false),JBB_POST_TIMEOUT);
     window[callback]=data=>finish(!!(data&&data.exists));
     script.onerror=()=>finish(false);
-    script.src=JBB_SHEET_ENDPOINT+'?action='+encodeURIComponent(kind+'Status')+'&submissionId='+encodeURIComponent(submissionId)+'&callback='+encodeURIComponent(callback)+'&_='+Date.now();
+    let statusUrl=JBB_SHEET_ENDPOINT+'?action='+encodeURIComponent(kind+'Status')+'&submissionId='+encodeURIComponent(submissionId);
+    if(kind==='vote') statusUrl+='&deviceToken='+encodeURIComponent(jbbDevice)+'&date='+encodeURIComponent(jbbToday());
+    script.src=statusUrl+'&callback='+encodeURIComponent(callback)+'&_='+Date.now();
     document.body.appendChild(script);
   });
 }
@@ -308,7 +342,7 @@ function jbbRenderFooter(){
   document.getElementById('jbb-footTotal').textContent=Object.values(jbbState.submissions).reduce((s,l)=>s+l.length,0);
   const sb=document.getElementById('jbb-submitBtn');
   if(sb){ if(submitted){ sb.disabled=true; sb.textContent='오늘 투표 완료'; }
-    else { const n=jbbPending().length; sb.disabled=n===0; sb.textContent='투표완료 ('+n+'/5)'; } }
+    else { const n=jbbPending().length; sb.disabled=jbbSubmitBusy||n===0; sb.textContent=jbbSubmitBusy?'저장 중...':'투표완료 ('+n+'/5)'; } }
 }
 function jbbRenderEventEntry(){
   const submitted=jbbSubmittedToday(), complete=jbbEntrySubmittedToday();
