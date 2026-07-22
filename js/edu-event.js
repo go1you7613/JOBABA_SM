@@ -91,9 +91,7 @@ function jbbRevealEntry(){
   jbbHideEventModal();
   jbbEntryRevealed=true;
   jbbRenderEventEntry();
-  const section=document.getElementById('jbb-entrySection');
-  section.scrollIntoView({behavior:'smooth',block:'start'});
-  setTimeout(()=>document.getElementById('jbb-phone').focus(),350);
+  setTimeout(()=>document.getElementById('jbb-phone').focus(),150);
 }
 function jbbHandleEventModalAction(){
   if(document.getElementById('jbb-eventModalAction').dataset.mode==='complete') window.location.href=JBB_LMS_MAIN_URL;
@@ -315,7 +313,10 @@ function jbbRenderFooter(){
 function jbbRenderEventEntry(){
   const submitted=jbbSubmittedToday(), complete=jbbEntrySubmittedToday();
   const wrap=document.getElementById('jbb-entryWrap');
-  wrap.hidden=!submitted||complete||!jbbEntryRevealed;
+  const visible=submitted&&!complete&&jbbEntryRevealed;
+  wrap.hidden=!visible;
+  wrap.setAttribute('aria-hidden',String(!visible));
+  document.body.classList.toggle('jbb-modalOpen',visible);
   ['jbb-phone','jbb-eventNoticeConsent','jbb-ageConsent','jbb-privacyConsent','jbb-entryCancel'].forEach(id=>{ document.getElementById(id).disabled=complete; });
   jbbUpdateEntryButton();
 }
