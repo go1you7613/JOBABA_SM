@@ -112,6 +112,7 @@ body.jbb-modalOpen{overflow:hidden}
 #jbb-app .jbb-entryHead h2{margin:0;font-size:26px;color:var(--jbb-brand-d);font-weight:900;letter-spacing:-.02em}
 #jbb-app .jbb-entryHead p{margin:8px 0 20px;font-size:15px;color:var(--jbb-muted)}
 #jbb-app .jbb-prizeSummary{overflow:hidden;border-radius:12px}
+#jbb-app .jbb-prizeSummary picture{display:block}
 #jbb-app .jbb-prizeSummaryImage{display:block;width:100%;height:auto}
 #jbb-app .jbb-formField{margin-top:24px}
 #jbb-app .jbb-formField>label{display:block;margin-bottom:7px;font-size:15px;font-weight:800;color:var(--jbb-ink)}
