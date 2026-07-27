@@ -10,22 +10,11 @@
 <div id="jbb-app">
   <div class="jbb-header">
     <div class="jbb-heroInner">
-      <div class="jbb-heroCopy">
-        <div class="jbb-heroEyebrow">잡아바 러닝센터 · 온라인교육 수요조사</div>
-        <h1>원하는 강의 선택하고,<br><strong>상품 받아가세요!</strong></h1>
-        <p>잡아바 러닝센터에서 듣고 싶은 온라인 강의에 투표해 주세요.<br>투표를 완료하고 이벤트에 응모하실 수 있습니다.</p>
-        <dl class="jbb-heroFacts">
-          <div><dt>기간</dt><dd>2026. 8. 3 (월) ~ 8. 14 (금)</dd></div>
-          <div><dt>대상</dt><dd>잡아바 러닝센터 이용자 누구나</dd></div>
-          <div><dt>내용</dt><dd>신규 온라인교육 콘텐츠 수요조사</dd></div>
-          <div><dt>방법</dt><dd>매일 1회 5개 투표 · 중복 선택 가능</dd></div>
-        </dl>
-        <div class="jbb-heroKeywords">
-          <span>원하는 강의 <b>매일 5개 선택</b></span>
-          <span>내일도 참여하면 <b>당첨 확률 UP↑</b></span>
-        </div>
+      <img class="jbb-heroBackground" src="image/hero-demand-survey-background-figma.png" alt="" aria-hidden="true">
+      <div class="jbb-heroObjectStage">
+        <img class="jbb-heroLeft" src="image/hero-demand-survey-left-figma.png" alt="잡아바 러닝센터 온라인교육 수요조사. 원하는 강의 선택하고, 상품 받아가세요! 2026년 8월 3일부터 8월 14일까지 매일 1회 5개 강의를 선택할 수 있습니다.">
+        <img class="jbb-heroRight" src="image/hero-demand-survey-right-figma.png" alt="" aria-hidden="true">
       </div>
-      <img class="jbb-heroArt" src="image/hero-demand-survey-event-v1.png" alt="" aria-hidden="true">
     </div>
   </div>
 
@@ -55,12 +44,8 @@
         <p>휴대전화번호를 입력하고 필수 항목에 동의하면 이벤트 응모가 완료됩니다.</p>
       </div>
       <div class="jbb-prizeSummary" aria-label="이벤트 경품 정보">
-        <div><span>경품</span><strong>GS25 모바일 금액권 3,000원 권</strong></div>
-        <div><span>당첨인원</span><strong>150명</strong></div>
-        <div><span>당첨자 발표</span><strong>2026. 8. 17 (월)</strong></div>
-        <div><span>경품 발송</span><strong>발표 후 영업일 기준 3일 이내</strong></div>
+        <img class="jbb-prizeSummaryImage" src="image/entry-prize-summary-figma.png" alt="경품 GS25 모바일 금액권 3,000원권, 당첨인원 150명, 당첨자 발표 2026년 8월 17일 월요일, 경품 발송 발표 후 영업일 기준 3일 이내 예정. 서로 다른 날짜에 참여할 때마다 추첨 가중치가 1점씩 추가되며 최대 5점까지 반영됩니다.">
       </div>
-      <p class="jbb-weightNote"><b>1일 1회 응모 가능</b> · 서로 다른 날짜에 참여할 때마다 추첨 가중치가 추가되며 최대 5회까지 반영됩니다.</p>
 
       <div class="jbb-formField">
         <label for="jbb-phone">휴대전화번호 <span aria-hidden="true">*</span></label>
@@ -69,12 +54,12 @@
       </div>
 
       <div class="jbb-entryInfoGrid">
-        <section class="jbb-entryInfo" aria-labelledby="jbb-privacyNoticeTitle">
+        <section class="jbb-entryInfo jbb-entryInfoWide" aria-labelledby="jbb-privacyNoticeTitle">
           <h3 id="jbb-privacyNoticeTitle">개인정보 수집·이용 안내</h3>
           <div class="jbb-scrollNotice" tabindex="0">
             <ol>
               <li><b>수집 항목:</b> 휴대전화번호, 수요조사 참여 일시, 이벤트 응모 일시, 투표 여부, 동의 여부 및 동의 일시, 기기 식별값</li>
-              <li><b>수집·이용 목적:</b> 이벤트 참여자 식별, 중복 응모 확인, 당첨자 확인 및 경품 안내, 모바일 경품 발송, 문의 및 이의처리</li>
+              <li><b>수집·이용 목적:</b> 이벤트 참여자 식별, 중복 응모 확인, 당첨자 확인 및 경품 안내, 모바일 경품 발송, 문의 및 이의 처리</li>
               <li><b>보유·이용 기간:</b> 이벤트 종료 및 경품 지급 완료 후 30일 이내 파기합니다. 단, 관계 법령에 따라 보관이 필요한 경우 해당 법령에서 정한 기간 동안 보관합니다.</li>
               <li><b>동의 거부 권리 및 불이익:</b> 개인정보 수집·이용에 동의하지 않을 권리가 있습니다. 다만, 동의를 거부하면 경품 이벤트에 응모할 수 없습니다.</li>
               <li>수집한 개인정보는 위 목적 외 용도로 이용하지 않습니다.</li>
@@ -83,36 +68,41 @@
           </div>
         </section>
 
-        <section class="jbb-entryInfo" aria-labelledby="jbb-outsourcingTitle">
-          <h3 id="jbb-outsourcingTitle">개인정보 처리 위탁 안내</h3>
+        <details class="jbb-entryInfo jbb-entryInfoCompact jbb-entryDisclosure" aria-labelledby="jbb-outsourcingTitle">
+          <summary id="jbb-outsourcingTitle">개인정보 처리 위탁 안내 <span>[전문보기]</span></summary>
           <div class="jbb-scrollNotice" tabindex="0">
-            <p>경기도일자리재단은 원활한 이벤트 운영을 위해 다음과 같이 개인정보 처리 업무를 외부 전문 업체에 위탁하고 있습니다.</p>
+            <p>[경기도일자리재단]은 원활한 이벤트 운영을 위해 다음과 같이 개인정보 처리 업무를 외부 전문 업체에 위탁하고 있습니다.</p>
             <ul>
-              <li><b>㈜기프티쇼</b><br>위탁 업무: 모바일 쿠폰 발송<br>처리 항목: 휴대전화번호<br>보유 기간: 발송 완료 즉시 파기</li>
-              <li><b>㈜케이브레인</b><br>위탁 업무: 이벤트 응모·당첨 시스템 운영<br>처리 항목: 이벤트 응모 정보 일체<br>보유 기간: 이벤트 종료 후 30일</li>
+              <li><b>▸ 수탁사: ㈜기프티쇼</b><br>· 위탁 업무: 모바일 쿠폰 발송<br>· 처리 항목: 휴대전화번호<br>· 보유 기간: 발송 완료 즉시 파기</li>
+              <li><b>▸ 수탁사: ㈜케이브레인</b><br>· 위탁 업무: 이벤트 응모·당첨 시스템 운영<br>· 처리 항목: 이벤트 응모 정보 일체<br>· 보유 기간: 이벤트 종료 후 30일</li>
             </ul>
-            <p>경기도일자리재단은 「개인정보 보호법」 제26조에 따라 수탁사와 위탁 계약을 체결하고 개인정보가 안전하게 처리되도록 관리·감독하고 있습니다.</p>
+            <p>[경기도일자리재단]은 「개인정보 보호법」 제26조에 따라 수탁사와 위탁 계약을 체결하고 개인정보가 안전하게 처리되도록 관리·감독하고 있습니다.</p>
           </div>
-        </section>
-      </div>
+        </details>
 
-      <section class="jbb-entryInfo jbb-entryCautions" aria-labelledby="jbb-cautionTitle">
-        <h3 id="jbb-cautionTitle">이벤트 유의사항</h3>
-        <div class="jbb-scrollNotice" tabindex="0">
-          <ul>
-            <li>수요조사 투표 후 휴대전화번호 입력과 개인정보 동의를 완료해야 이벤트에 응모됩니다.</li>
-            <li>이벤트 참여이력은 입력한 휴대전화번호를 기준으로 관리됩니다.</li>
-            <li>동일한 날짜에 여러 번 응모하더라도 추첨 가중치는 1점만 인정됩니다.</li>
-            <li>서로 다른 날짜에 참여하면 최대 5점까지 추첨 가중치가 적용됩니다.</li>
-            <li>경품은 1인당 최대 1개만 지급되며 중복 당첨은 허용되지 않습니다.</li>
-            <li>최종 당첨 확률은 전체 응모자 수와 참여자별 가중치 구성에 따라 달라집니다.</li>
-            <li>타인의 휴대전화번호 사용, 자동화된 참여 등 부정한 방법이 확인되면 응모 또는 당첨이 취소될 수 있습니다.</li>
-            <li>휴대전화번호 오입력으로 경품을 받지 못한 경우 재발송이 제한될 수 있습니다.</li>
-            <li>경품은 사정에 따라 동일한 가치의 다른 상품으로 변경될 수 있습니다.</li>
-            <li>당첨자 발표 및 경품 발송 일정은 운영 상황에 따라 변경될 수 있습니다.</li>
-          </ul>
-        </div>
-      </section>
+        <details class="jbb-entryInfo jbb-entryInfoCompact jbb-entryDisclosure" aria-labelledby="jbb-cautionTitle">
+          <summary id="jbb-cautionTitle">이벤트 유의사항 <span>[전문보기]</span></summary>
+          <div class="jbb-scrollNotice" tabindex="0">
+            <ul>
+              <li>수요조사 투표 후 휴대전화번호 입력과 개인정보 동의를 완료해야 이벤트에 응모됩니다.</li>
+              <li>이벤트 참여이력은 입력한 휴대전화번호를 기준으로 관리됩니다.</li>
+              <li>동일한 날짜에 여러 번 응모하더라도 추첨 가중치는 1점만 인정됩니다.</li>
+              <li>서로 다른 날짜에 참여하면 최대 5점까지 추첨 가중치가 적용됩니다.</li>
+              <li>경품은 1인당 최대 1개만 지급되며 중복 당첨은 허용되지 않습니다.</li>
+              <li>최종 당첨 확률은 전체 응모자 수와 참여자별 가중치 구성에 따라 달라집니다.</li>
+              <li>타인의 휴대전화번호 사용, 자동화된 참여 등 부정한 방법이 확인되면 응모 또는 당첨이 취소될 수 있습니다.</li>
+              <li>휴대전화번호 오입력으로 경품을 받지 못한 경우 재발송이 제한될 수 있습니다.</li>
+              <li>경품은 사정에 따라 동일한 가치의 다른 상품으로 변경될 수 있습니다.</li>
+              <li>당첨자 발표 및 경품 발송 일정은 운영 상황에 따라 변경될 수 있습니다.</li>
+              <li>사은품 발송을 위해 당사 경품 대행사에 참여자 신청 정보가 제공되며 이벤트 종료 후 파기됩니다.</li>
+              <li>경품 지급 시기는 사정에 따라 변경될 수 있으며, 이 경우 잡아바 홈페이지를 통해 공고합니다.</li>
+              <li>이벤트에 응모하는 경우 상기 내용에 모두 동의하는 것으로 간주합니다.</li>
+              <li>본 사이트의 이벤트는 경기도일자리재단의 위탁을 받아 (주)케이브레인에서 운영, 관리합니다.</li>
+              <li>잡아바에서 진행하는 경품 이벤트는 경기도일자리재단에서 주관·주최하는 이벤트로서 경품 생산 및 발송 기업의 경우 경품 이벤트와 무관하며, 어떠한 식으로든 관여하지 않습니다.</li>
+            </ul>
+          </div>
+        </details>
+      </div>
 
       <div class="jbb-entryChecks">
         <label class="jbb-consent" for="jbb-eventNoticeConsent">
