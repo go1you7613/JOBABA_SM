@@ -38,7 +38,7 @@ const JBB_SHEET_ENDPOINT='https://script.google.com/macros/s/AKfycbyJT-4UUgC5hlr
 const JBB_LIMIT=5, JBB_STORE='JBB_SURVEY_V2', JBB_CONSENT_VERSION='2026-08-03';
 const JOBABA_MAIN_URL='https://job.gg.go.kr/';
 const JBB_LMS_MAIN_URL='https://lms.gg.go.kr/gjf/home.do';
-const JBB_POST_TIMEOUT=15000;
+const JBB_POST_TIMEOUT=15000, JBB_STATUS_TIMEOUT=7000, JBB_STATUS_RETRY_COUNT=3, JBB_STATUS_RETRY_DELAY=1000;
 
 function jbbUuid(){ return 'dev-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10); }
 let jbbDevice=localStorage.getItem('JBB_DEVICE');
@@ -60,7 +60,14 @@ function jbbPending(){ if(jbbState.pending.date!==jbbToday()){ jbbState.pending=
 function jbbSubmittedItems(date){ return jbbState.submissions[date]||[]; }
 function jbbSubmittedToday(){ return !!jbbState.submissions[jbbToday()]; }
 function jbbEntrySubmittedToday(){ return !!jbbState.entries[jbbToday()]; }
-function jbbSubmissionId(){ return 'vote-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10); }
+function jbbSubmissionId(){
+  const today=jbbToday();
+  if(jbbState.submissionIds[today]) return jbbState.submissionIds[today];
+  const submissionId='vote-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10);
+  jbbState.submissionIds[today]=submissionId;
+  jbbSave();
+  return submissionId;
+}
 function jbbVoteCount(id){ const items=jbbSubmittedToday()?jbbSubmittedItems(jbbToday()):jbbPending(); return items.filter(itemId=>itemId===id).length; }
 function jbbIsSelected(id){ return jbbVoteCount(id)>0; }
 function jbbTodayCount(){ return jbbSubmittedToday()? jbbSubmittedItems(jbbToday()).length : jbbPending().length; }
@@ -226,14 +233,14 @@ async function jbbPostPayload(payload){
   }catch(e){ return false; }
   finally{ clearTimeout(timer); }
 }
-function jbbCheckServerRecord(kind,submissionId){
+function jbbCheckServerRecordOnce(kind,submissionId){
   if(!JBB_SHEET_ENDPOINT) return Promise.resolve(true);
   return new Promise(resolve=>{
     const callback='__jbbStatus'+Date.now()+Math.random().toString(36).slice(2,7);
     const script=document.createElement('script');
     let settled=false;
     const finish=exists=>{ if(settled) return; settled=true; clearTimeout(timer); try{delete window[callback];}catch(e){} script.remove(); resolve(exists); };
-    const timer=setTimeout(()=>finish(false),JBB_POST_TIMEOUT);
+    const timer=setTimeout(()=>finish(false),JBB_STATUS_TIMEOUT);
     window[callback]=data=>finish(!!(data&&data.exists));
     script.onerror=()=>finish(false);
     let statusUrl=JBB_SHEET_ENDPOINT+'?action='+encodeURIComponent(kind+'Status')+'&submissionId='+encodeURIComponent(submissionId);
@@ -242,17 +249,25 @@ function jbbCheckServerRecord(kind,submissionId){
     document.body.appendChild(script);
   });
 }
+function jbbDelay(ms){ return new Promise(resolve=>setTimeout(resolve,ms)); }
+async function jbbCheckServerRecord(kind,submissionId){
+  for(let attempt=0;attempt<JBB_STATUS_RETRY_COUNT;attempt++){
+    if(await jbbCheckServerRecordOnce(kind,submissionId)) return true;
+    if(attempt<JBB_STATUS_RETRY_COUNT-1) await jbbDelay(JBB_STATUS_RETRY_DELAY);
+  }
+  return false;
+}
 async function jbbPostVote(items,submissionId){
   const payload={ action:'submitVote', submissionId, deviceToken:jbbDevice, date:jbbToday(), ts:Date.now(),
     items: items.map(id=>{ const it=ITEM_INDEX[id]||{}; return {itemId:id, cat:it.catName, group:it.group, name:it.name}; }) };
-  if(!await jbbPostPayload(payload)) return false;
+  await jbbPostPayload(payload);
   return jbbCheckServerRecord('vote',submissionId);
 }
 async function jbbPostEntry(participant){
   const submissionId=jbbState.submissionIds[jbbToday()]||'';
-  if(!await jbbPostPayload({action:'submitEntry',submissionId,deviceToken:jbbDevice,date:jbbToday(),ts:Date.now(),
+  await jbbPostPayload({action:'submitEntry',submissionId,deviceToken:jbbDevice,date:jbbToday(),ts:Date.now(),
     phone:participant.phone,eventNoticeConfirmed:participant.eventNoticeConfirmed===true,ageOver14:participant.ageOver14===true,
-    privacyConsent:participant.privacyConsent===true,privacyConsentVersion:JBB_CONSENT_VERSION,consentedAt:participant.consentedAt})) return false;
+    privacyConsent:participant.privacyConsent===true,privacyConsentVersion:JBB_CONSENT_VERSION,consentedAt:participant.consentedAt});
   return jbbCheckServerRecord('entry',submissionId);
 }
 function jbbRefreshRank(){
