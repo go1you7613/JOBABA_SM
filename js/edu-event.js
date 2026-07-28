@@ -51,7 +51,7 @@ if(!jbbState.submissions) jbbState.submissions={};
 if(!jbbState.pending) jbbState.pending={date:'',items:[]};
 if(!jbbState.entries) jbbState.entries={};
 if(!jbbState.submissionIds) jbbState.submissionIds={};
-let jbbShowAll=false, jbbRemoteRank=null, jbbRemoteTotals=null;
+let jbbShowAll=false, jbbRemoteRank=null, jbbRemoteTotals=null, jbbServerMyTotal=0;
 let jbbSubmitBusy=false, jbbEntryBusy=false;
 let jbbEntryRevealed=jbbSubmittedToday()&&!jbbEntrySubmittedToday();
 
@@ -209,12 +209,8 @@ async function jbbSubmit(){
   jbbRenderFooter();
   jbbShowLoading('투표 내용을 저장하고 있습니다.');
   try{
-    const sent=await jbbPostVote(items,submissionId);
-    if(!sent){ jbbToast('투표를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.'); return; }
-    jbbState.submissions[jbbToday()]=items;
-    jbbState.submissionIds[jbbToday()]=submissionId;
-    jbbState.pending={date:jbbToday(),items:[]};
-    jbbSave();
+    const record=await jbbPostVote(items,submissionId);
+    if(!jbbApplyVoteRecord(record,items,submissionId)){ jbbToast('투표를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.'); return; }
     jbbRenderAll();
     jbbShowEventModal('intro');
   }finally{
@@ -234,15 +230,15 @@ async function jbbPostPayload(payload){
   finally{ clearTimeout(timer); }
 }
 function jbbCheckServerRecordOnce(kind,submissionId){
-  if(!JBB_SHEET_ENDPOINT) return Promise.resolve(true);
+  if(!JBB_SHEET_ENDPOINT) return Promise.resolve({exists:true});
   return new Promise(resolve=>{
     const callback='__jbbStatus'+Date.now()+Math.random().toString(36).slice(2,7);
     const script=document.createElement('script');
     let settled=false;
-    const finish=exists=>{ if(settled) return; settled=true; clearTimeout(timer); try{delete window[callback];}catch(e){} script.remove(); resolve(exists); };
-    const timer=setTimeout(()=>finish(false),JBB_STATUS_TIMEOUT);
-    window[callback]=data=>finish(!!(data&&data.exists));
-    script.onerror=()=>finish(false);
+    const finish=record=>{ if(settled) return; settled=true; clearTimeout(timer); try{delete window[callback];}catch(e){} script.remove(); resolve(record); };
+    const timer=setTimeout(()=>finish(null),JBB_STATUS_TIMEOUT);
+    window[callback]=data=>finish(data&&typeof data==='object'?data:null);
+    script.onerror=()=>finish(null);
     let statusUrl=JBB_SHEET_ENDPOINT+'?action='+encodeURIComponent(kind+'Status')+'&submissionId='+encodeURIComponent(submissionId);
     if(kind==='vote') statusUrl+='&deviceToken='+encodeURIComponent(jbbDevice)+'&date='+encodeURIComponent(jbbToday());
     script.src=statusUrl+'&callback='+encodeURIComponent(callback)+'&_='+Date.now();
@@ -251,11 +247,52 @@ function jbbCheckServerRecordOnce(kind,submissionId){
 }
 function jbbDelay(ms){ return new Promise(resolve=>setTimeout(resolve,ms)); }
 async function jbbCheckServerRecord(kind,submissionId){
+  let latest=null;
   for(let attempt=0;attempt<JBB_STATUS_RETRY_COUNT;attempt++){
-    if(await jbbCheckServerRecordOnce(kind,submissionId)) return true;
+    const record=await jbbCheckServerRecordOnce(kind,submissionId);
+    if(record){
+      latest=record;
+      if(record.exists) return record;
+    }
     if(attempt<JBB_STATUS_RETRY_COUNT-1) await jbbDelay(JBB_STATUS_RETRY_DELAY);
   }
-  return false;
+  return latest;
+}
+function jbbServerItems(items){
+  if(!Array.isArray(items)) return [];
+  return items.map(String).filter(id=>ITEM_INDEX[id]).slice(0,JBB_LIMIT);
+}
+function jbbApplyVoteRecord(record,fallbackItems,fallbackSubmissionId){
+  if(!record) return false;
+  const total=Number(record.totalSelections);
+  if(Number.isFinite(total)&&total>=0) jbbServerMyTotal=total;
+  if(!record.exists) return false;
+
+  const serverItems=jbbServerItems(record.items);
+  const items=serverItems.length?serverItems:(fallbackItems||[]).slice();
+  if(items.length===0) return false;
+
+  const today=jbbToday();
+  jbbState.submissions[today]=items;
+  jbbState.submissionIds[today]=record.submissionId||fallbackSubmissionId||jbbState.submissionIds[today]||'';
+  jbbState.pending={date:today,items:[]};
+  jbbSave();
+  return true;
+}
+async function jbbRestoreServerVoteState(){
+  const today=jbbToday();
+  const record=await jbbCheckServerRecordOnce('vote',jbbState.submissionIds[today]||'');
+  if(!record) return;
+
+  const total=Number(record.totalSelections);
+  if(Number.isFinite(total)&&total>=0) jbbServerMyTotal=total;
+  const serverItems=jbbServerItems(record.items);
+  if(record.exists&&serverItems.length){
+    jbbApplyVoteRecord(record,serverItems,record.submissionId||'');
+    jbbRenderAll();
+  }else{
+    jbbRenderFooter();
+  }
 }
 async function jbbPostVote(items,submissionId){
   const payload={ action:'submitVote', submissionId, deviceToken:jbbDevice, date:jbbToday(), ts:Date.now(),
@@ -268,7 +305,8 @@ async function jbbPostEntry(participant){
   await jbbPostPayload({action:'submitEntry',submissionId,deviceToken:jbbDevice,date:jbbToday(),ts:Date.now(),
     phone:participant.phone,eventNoticeConfirmed:participant.eventNoticeConfirmed===true,ageOver14:participant.ageOver14===true,
     privacyConsent:participant.privacyConsent===true,privacyConsentVersion:JBB_CONSENT_VERSION,consentedAt:participant.consentedAt});
-  return jbbCheckServerRecord('entry',submissionId);
+  const record=await jbbCheckServerRecord('entry',submissionId);
+  return !!(record&&record.exists);
 }
 function jbbRefreshRank(){
   if(!JBB_SHEET_ENDPOINT) return;
@@ -354,7 +392,8 @@ function jbbRenderResult(){
 function jbbRenderFooter(){
   const submitted=jbbSubmittedToday();
   document.getElementById('jbb-footToday').textContent=jbbTodayCount();
-  document.getElementById('jbb-footTotal').textContent=Object.values(jbbState.submissions).reduce((s,l)=>s+l.length,0);
+  const localTotal=Object.values(jbbState.submissions).reduce((s,l)=>s+l.length,0);
+  document.getElementById('jbb-footTotal').textContent=Math.max(localTotal,jbbServerMyTotal);
   const sb=document.getElementById('jbb-submitBtn');
   if(sb){ if(submitted){ sb.disabled=true; sb.textContent='오늘 투표 완료'; }
     else { const n=jbbPending().length; sb.disabled=jbbSubmitBusy||n===0; sb.textContent=jbbSubmitBusy?'저장 중...':'투표완료 ('+n+'/5)'; } }
@@ -394,4 +433,4 @@ document.getElementById('jbb-cancelStay').onclick=jbbHideCancel;
 document.getElementById('jbb-cancelConfirm').onclick=()=>{ window.location.href=JOBABA_MAIN_URL; };
 document.getElementById('jbb-cancelOverlay').onclick=e=>{ if(e.target.id==='jbb-cancelOverlay')jbbHideCancel(); };
 
-jbbBuildTabs(); jbbRenderAll();
+jbbBuildTabs(); jbbRenderAll(); jbbRestoreServerVoteState();
