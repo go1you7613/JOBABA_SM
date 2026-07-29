@@ -38,7 +38,7 @@ const JBB_SHEET_ENDPOINT='https://script.google.com/macros/s/AKfycbyJT-4UUgC5hlr
 const JBB_LIMIT=5, JBB_STORE='JBB_SURVEY_V2', JBB_CONSENT_VERSION='2026-08-03';
 const JOBABA_MAIN_URL='https://job.gg.go.kr/';
 const JBB_LMS_MAIN_URL='https://lms.gg.go.kr/gjf/home.do';
-const JBB_POST_TIMEOUT=15000, JBB_STATUS_TIMEOUT=7000, JBB_STATUS_RETRY_COUNT=3, JBB_STATUS_RETRY_DELAY=1000;
+const JBB_POST_TIMEOUT=15000, JBB_STATUS_TIMEOUT=15000, JBB_STATUS_RETRY_COUNT=3, JBB_STATUS_RETRY_DELAY=1000;
 
 function jbbUuid(){ return 'dev-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10); }
 let jbbDevice=localStorage.getItem('JBB_DEVICE');
@@ -52,7 +52,7 @@ if(!jbbState.pending) jbbState.pending={date:'',items:[]};
 if(!jbbState.entries) jbbState.entries={};
 if(!jbbState.submissionIds) jbbState.submissionIds={};
 let jbbShowAll=false, jbbRemoteRank=null, jbbRemoteTotals=null, jbbServerMyTotal=0;
-let jbbSubmitBusy=false, jbbEntryBusy=false;
+let jbbSubmitBusy=false, jbbEntryBusy=false, jbbVoteStateBusy=false;
 let jbbEntryRevealed=jbbSubmittedToday()&&!jbbEntrySubmittedToday();
 
 function jbbToday(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -134,6 +134,7 @@ function jbbPlayVoteEffect(id){
 }
 
 function jbbAddVote(id){
+  if(jbbVoteStateBusy){ jbbToast('기존 투표 이력을 확인하고 있습니다. 잠시만 기다려 주세요.'); return; }
   if(jbbSubmittedToday()){ jbbToast('오늘은 이미 제출을 완료했습니다. 내일 다시 참여해 주세요.'); return; }
   const items=jbbPending();
   if(items.length>=JBB_LIMIT){ jbbShowLimit(); return; }
@@ -143,6 +144,7 @@ function jbbAddVote(id){
   jbbPlayVoteEffect(id);
 }
 function jbbRemoveVote(id){
+  if(jbbVoteStateBusy){ jbbToast('기존 투표 이력을 확인하고 있습니다. 잠시만 기다려 주세요.'); return; }
   if(jbbSubmittedToday()){ jbbToast('오늘은 이미 제출을 완료했습니다.'); return; }
   const items=jbbPending(), i=items.lastIndexOf(id);
   if(i<0) return;
@@ -201,6 +203,7 @@ function jbbShowCancel(){ const el=document.getElementById('jbb-cancelOverlay');
 function jbbHideCancel(){ const el=document.getElementById('jbb-cancelOverlay'); el.classList.remove('jbb-show'); el.setAttribute('aria-hidden','true'); }
 async function jbbSubmit(){
   if(jbbSubmitBusy) return;
+  if(jbbVoteStateBusy){ jbbToast('기존 투표 이력을 확인하고 있습니다. 잠시만 기다려 주세요.'); return; }
   if(jbbSubmittedToday()){ jbbToast('오늘은 이미 제출을 완료했습니다.'); return; }
   const items=jbbPending().slice();
   if(items.length===0){ jbbToast('투표한 교육과정이 없습니다. 먼저 원하는 과정에 투표해 주세요.'); return; }
@@ -210,7 +213,11 @@ async function jbbSubmit(){
   jbbShowLoading('투표 내용을 저장하고 있습니다.');
   try{
     const record=await jbbPostVote(items,submissionId);
-    if(!jbbApplyVoteRecord(record,items,submissionId)){ jbbToast('투표를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.'); return; }
+    if(!jbbApplyVoteRecord(record,items,submissionId)){
+      jbbToast('투표 저장 여부를 확인하고 있습니다. 잠시만 기다려 주세요.');
+      jbbRestoreServerVoteState(true);
+      return;
+    }
     jbbRenderAll();
     jbbShowEventModal('intro');
   }finally{
@@ -279,19 +286,24 @@ function jbbApplyVoteRecord(record,fallbackItems,fallbackSubmissionId){
   jbbSave();
   return true;
 }
-async function jbbRestoreServerVoteState(){
+async function jbbRestoreServerVoteState(showEventOnRestore){
   const today=jbbToday();
-  const record=await jbbCheckServerRecordOnce('vote',jbbState.submissionIds[today]||'');
-  if(!record) return;
+  jbbVoteStateBusy=true;
+  jbbRenderAll();
+  try{
+    const record=await jbbCheckServerRecord('vote',jbbState.submissionIds[today]||'');
+    if(!record) return;
 
-  const total=Number(record.totalSelections);
-  if(Number.isFinite(total)&&total>=0) jbbServerMyTotal=total;
-  const serverItems=jbbServerItems(record.items);
-  if(record.exists&&serverItems.length){
-    jbbApplyVoteRecord(record,serverItems,record.submissionId||'');
+    const total=Number(record.totalSelections);
+    if(Number.isFinite(total)&&total>=0) jbbServerMyTotal=total;
+    const serverItems=jbbServerItems(record.items);
+    if(record.exists&&serverItems.length){
+      jbbApplyVoteRecord(record,serverItems,record.submissionId||'');
+      if(showEventOnRestore) jbbShowEventModal('intro');
+    }
+  }finally{
+    jbbVoteStateBusy=false;
     jbbRenderAll();
-  }else{
-    jbbRenderFooter();
   }
 }
 async function jbbPostVote(items,submissionId){
@@ -365,11 +377,11 @@ function jbbRenderItems(){
   const submitted=jbbSubmittedToday(), full=jbbPending().length>=JBB_LIMIT;
   Object.values(ITEM_INDEX).forEach(it=>{
     const card=document.getElementById('jbb-card-'+it.id), plus=document.getElementById('jbb-plus-'+it.id), minus=document.getElementById('jbb-minus-'+it.id);
-    const count=jbbVoteCount(it.id), sel=count>0, locked=submitted||(!sel&&full);
+    const count=jbbVoteCount(it.id), sel=count>0, locked=jbbVoteStateBusy||submitted||(!sel&&full);
     card.classList.toggle('jbb-sel',!!sel); card.classList.toggle('jbb-locked',!!locked);
     document.getElementById('jbb-count-'+it.id).textContent=count+'표';
-    plus.disabled=submitted||full;
-    minus.disabled=submitted||count===0;
+    plus.disabled=jbbVoteStateBusy||submitted||full;
+    minus.disabled=jbbVoteStateBusy||submitted||count===0;
   });
 }
 function jbbRenderResult(){
@@ -395,7 +407,8 @@ function jbbRenderFooter(){
   const localTotal=Object.values(jbbState.submissions).reduce((s,l)=>s+l.length,0);
   document.getElementById('jbb-footTotal').textContent=Math.max(localTotal,jbbServerMyTotal);
   const sb=document.getElementById('jbb-submitBtn');
-  if(sb){ if(submitted){ sb.disabled=true; sb.textContent='오늘 투표 완료'; }
+  if(sb){ if(jbbVoteStateBusy){ sb.disabled=true; sb.textContent='투표 상태 확인 중...'; }
+    else if(submitted){ sb.disabled=true; sb.textContent='오늘 투표 완료'; }
     else { const n=jbbPending().length; sb.disabled=jbbSubmitBusy||n===0; sb.textContent=jbbSubmitBusy?'저장 중...':'투표완료 ('+n+'/5)'; } }
 }
 function jbbRenderEventEntry(){
